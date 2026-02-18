@@ -58,9 +58,45 @@ def msg_refunded(cost):
     )
 
 
+def _clean_error(result):
+    """Extract a clean error message from the verifier result."""
+    if isinstance(result, dict):
+        # Try to get systemErrorMessage first
+        sys_err = result.get("systemErrorMessage", "")
+        if sys_err:
+            # Extract the meaningful part (e.g. "can not perform step 'X'")
+            return sys_err
+
+        # Try errorIds
+        error_ids = result.get("errorIds", [])
+        if error_ids:
+            return ", ".join(error_ids)
+
+        # Try message field
+        msg = result.get("message", "")
+        if msg and len(msg) < 200:
+            return msg
+
+        # Try currentStep
+        step = result.get("currentStep", "")
+        if step == "error":
+            return "Verification rejected by SheerID / تم رفض التحقق من SheerID"
+
+    # Fallback: if it's a string, truncate if too long
+    error_str = str(result) if not isinstance(result, str) else result
+    if len(error_str) > 150:
+        return "Verification rejected / تم رفض التحقق"
+    return error_str
+
+
 def msg_verify_failed(error, cost):
+    clean = _clean_error(error) if isinstance(error, dict) else str(error)
+    # Truncate if still too long
+    if len(clean) > 200:
+        clean = clean[:200] + "..."
     return (
-        f"❌ Verification failed / فشل التحقق: {error}\n\n"
+        f"❌ Verification failed / فشل التحقق\n\n"
+        f"Reason / السبب: {clean}\n\n"
         f"{msg_refunded(cost)}"
     )
 
@@ -268,7 +304,7 @@ async def verify_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db:
             db.add_balance(user_id, VERIFY_COST)
             db.add_verification(user_id, "gemini_one_pro", url, "failed", str(result))
             await processing_msg.edit_text(
-                msg_verify_failed(result.get('message', 'Unknown error'), VERIFY_COST)
+                msg_verify_failed(result, VERIFY_COST)
             )
     except Exception as e:
         logger.error("Gemini verification error: %s", e)
@@ -331,7 +367,7 @@ async def verify2_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
             db.add_balance(user_id, VERIFY_COST)
             db.add_verification(user_id, "chatgpt_teacher_k12", url, "failed", str(result))
             await processing_msg.edit_text(
-                msg_verify_failed(result.get('message', 'Unknown error'), VERIFY_COST)
+                msg_verify_failed(result, VERIFY_COST)
             )
     except Exception as e:
         logger.error("ChatGPT K12 verification error: %s", e)
@@ -401,7 +437,7 @@ async def verify3_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
             db.add_balance(user_id, VERIFY_COST)
             db.add_verification(user_id, "spotify_student", url, "failed", str(result))
             await processing_msg.edit_text(
-                msg_verify_failed(result.get('message', 'Unknown error'), VERIFY_COST)
+                msg_verify_failed(result, VERIFY_COST)
             )
     except Exception as e:
         logger.error("Spotify verification error: %s", e)
@@ -592,7 +628,7 @@ async def verify5_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
             db.add_balance(user_id, VERIFY_COST)
             db.add_verification(user_id, "youtube_student", url, "failed", str(result))
             await processing_msg.edit_text(
-                msg_verify_failed(result.get('message', 'Unknown error'), VERIFY_COST)
+                msg_verify_failed(result, VERIFY_COST)
             )
     except Exception as e:
         logger.error("YouTube verification error: %s", e)

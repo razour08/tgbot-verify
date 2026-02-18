@@ -1,113 +1,127 @@
-"""消息模板"""
+"""Message Templates / قوالب الرسائل"""
 from config import CHANNEL_URL, VERIFY_COST, HELP_NOTION_URL
 
 
 def get_welcome_message(full_name: str, invited_by: bool = False) -> str:
-    """获取欢迎消息"""
+    """Get welcome message / رسالة الترحيب"""
     msg = (
-        f"🎉 欢迎，{full_name}！\n"
-        "您已成功注册，获得 1 积分。\n"
+        f"🎉 Welcome, {full_name}!\n"
+        "You have been registered and received 1 point.\n"
+        f"\n🎉 مرحباً، {full_name}!\n"
+        "تم تسجيلك بنجاح وحصلت على 1 نقطة.\n"
     )
     if invited_by:
-        msg += "感谢通过邀请链接加入，邀请人已获得 2 积分。\n"
+        msg += (
+            "Thanks for joining via invite link. The inviter received 2 points.\n"
+            "شكراً للانضمام عبر رابط الدعوة. حصل الداعي على 2 نقطة.\n"
+        )
 
     msg += (
-        "\n本机器人可自动完成 SheerID 认证。\n"
-        "快速开始：\n"
-        "/about - 了解机器人功能\n"
-        "/balance - 查看积分余额\n"
-        "/help - 查看完整命令列表\n\n"
-        "获取更多积分：\n"
-        "/qd - 每日签到\n"
-        "/invite - 邀请好友\n"
-        f"加入频道：{CHANNEL_URL}"
+        "\n🤖 This bot can auto-complete SheerID verification.\n"
+        "هذا البوت يُكمل تحقق SheerID تلقائياً.\n"
+        "\n📌 Quick Start / البدء السريع:\n"
+        "/about - Bot features / ميزات البوت\n"
+        "/balance - Points balance / رصيد النقاط\n"
+        "/help - Full command list / قائمة الأوامر\n\n"
+        "💰 Earn Points / اكسب النقاط:\n"
+        "/qd - Daily check-in / تسجيل الدخول اليومي\n"
+        "/invite - Invite friends / دعوة الأصدقاء\n"
+        f"📺 Channel / القناة: {CHANNEL_URL}"
     )
     return msg
 
 
 def get_about_message() -> str:
-    """获取关于消息"""
+    """Get about message / رسالة حول البوت"""
     return (
-        "🤖 SheerID 自动认证机器人\n"
+        "🤖 SheerID Auto-Verification Bot\n"
+        "بوت التحقق التلقائي من SheerID\n"
         "\n"
-        "功能介绍:\n"
-        "- 自动完成 SheerID 学生/教师认证\n"
-        "- 支持 Gemini One Pro、ChatGPT Teacher K12、Spotify Student、YouTube Student、Bolt.new Teacher 认证\n"
+        "📋 Features / الميزات:\n"
+        "- Auto-complete SheerID student/teacher verification\n"
+        "  إكمال تحقق الطلاب/المعلمين تلقائياً\n"
+        "- Supports: Gemini One Pro, ChatGPT Teacher K12, Spotify Student, YouTube Student, Bolt.new Teacher\n"
         "\n"
-        "积分获取:\n"
-        "- 注册赠送 1 积分\n"
-        "- 每日签到 +1 积分\n"
-        "- 邀请好友 +2 积分/人\n"
-        "- 使用卡密（按卡密规则）\n"
-        f"- 加入频道：{CHANNEL_URL}\n"
+        "💰 Earn Points / اكسب النقاط:\n"
+        "- Registration / التسجيل: +1 point/نقطة\n"
+        "- Daily check-in / تسجيل يومي: +1 point/نقطة\n"
+        "- Invite friends / دعوة أصدقاء: +2 points/نقطة per person\n"
+        "- Redemption codes / أكواد الاسترداد\n"
+        f"- Join channel / انضم للقناة: {CHANNEL_URL}\n"
         "\n"
-        "使用方法:\n"
-        "1. 在网页开始认证并复制完整的验证链接\n"
-        "2. 发送 /verify、/verify2、/verify3、/verify4 或 /verify5 携带该链接\n"
-        "3. 等待处理并查看结果\n"
-        "4. Bolt.new 认证会自动获取认证码，如需手动查询使用 /getV4Code <verification_id>\n"
+        "📖 How to use / طريقة الاستخدام:\n"
+        "1. Start verification on the website and copy the full link\n"
+        "   ابدأ التحقق على الموقع وانسخ الرابط الكامل\n"
+        "2. Send /verify, /verify2, /verify3, /verify4 or /verify5 with the link\n"
+        "   أرسل الأمر مع الرابط\n"
+        "3. Wait for processing and check results\n"
+        "   انتظر المعالجة وتحقق من النتائج\n"
+        "4. Bolt.new auto-fetches code. Manual query: /getV4Code <verification_id>\n"
+        "   Bolt.new يجلب الكود تلقائياً. استعلام يدوي: /getV4Code\n"
         "\n"
-        "更多命令请发送 /help"
+        "More commands / المزيد: /help"
     )
 
 
 def get_help_message(is_admin: bool = False) -> str:
-    """获取帮助消息"""
+    """Get help message / رسالة المساعدة"""
     msg = (
-        "📖 SheerID 自动认证机器人 - 帮助\n"
+        "📖 SheerID Bot - Help / المساعدة\n"
         "\n"
-        "用户命令:\n"
-        "/start - 开始使用（注册）\n"
-        "/about - 了解机器人功能\n"
-        "/balance - 查看积分余额\n"
-        "/qd - 每日签到（+1积分）\n"
-        "/invite - 生成邀请链接（+2积分/人）\n"
-        "/use <卡密> - 使用卡密兑换积分\n"
-        f"/verify <链接> - Gemini One Pro 认证（-{VERIFY_COST}积分）\n"
-        f"/verify2 <链接> - ChatGPT Teacher K12 认证（-{VERIFY_COST}积分）\n"
-        f"/verify3 <链接> - Spotify Student 认证（-{VERIFY_COST}积分）\n"
-        f"/verify4 <链接> - Bolt.new Teacher 认证（-{VERIFY_COST}积分）\n"
-        f"/verify5 <链接> - YouTube Student Premium 认证（-{VERIFY_COST}积分）\n"
-        "/getV4Code <verification_id> - 获取 Bolt.new 认证码\n"
-        "/help - 查看此帮助信息\n"
-        f"认证失败查看：{HELP_NOTION_URL}\n"
+        "👤 User Commands / أوامر المستخدم:\n"
+        "/start - Register / التسجيل\n"
+        "/about - Bot features / ميزات البوت\n"
+        "/balance - Points balance / رصيد النقاط\n"
+        "/qd - Daily check-in (+1) / تسجيل يومي\n"
+        "/invite - Invite link (+2/person) / رابط دعوة\n"
+        "/use <code> - Redeem code / استرداد كود\n"
+        f"/verify <link> - Gemini One Pro (-{VERIFY_COST}pt)\n"
+        f"/verify2 <link> - ChatGPT Teacher K12 (-{VERIFY_COST}pt)\n"
+        f"/verify3 <link> - Spotify Student (-{VERIFY_COST}pt)\n"
+        f"/verify4 <link> - Bolt.new Teacher (-{VERIFY_COST}pt)\n"
+        f"/verify5 <link> - YouTube Student Premium (-{VERIFY_COST}pt)\n"
+        "/getV4Code <id> - Get Bolt.new code / كود Bolt.new\n"
+        "/help - This help / هذه المساعدة\n"
+        f"❓ Troubleshooting / استكشاف الأخطاء: {HELP_NOTION_URL}\n"
     )
 
     if is_admin:
         msg += (
-            "\n管理员命令:\n"
-            "/addbalance <用户ID> <积分> - 增加用户积分\n"
-            "/block <用户ID> - 拉黑用户\n"
-            "/white <用户ID> - 取消拉黑\n"
-            "/blacklist - 查看黑名单\n"
-            "/genkey <卡密> <积分> [次数] [天数] - 生成卡密\n"
-            "/listkeys - 查看卡密列表\n"
-            "/broadcast <文本> - 向所有用户群发通知\n"
+            "\n🔧 Admin Commands / أوامر المسؤول:\n"
+            "/addbalance <user_id> <points> - Add points / إضافة نقاط\n"
+            "/block <user_id> - Block user / حظر مستخدم\n"
+            "/white <user_id> - Unblock user / إلغاء حظر\n"
+            "/blacklist - View blacklist / القائمة السوداء\n"
+            "/genkey <code> <points> [uses] [days] - Create code / إنشاء كود\n"
+            "/listkeys - View codes / عرض الأكواد\n"
+            "/broadcast <text> - Broadcast / إرسال جماعي\n"
         )
 
     return msg
 
 
 def get_insufficient_balance_message(current_balance: int) -> str:
-    """获取积分不足消息"""
+    """Get insufficient balance message / رسالة رصيد غير كافي"""
     return (
-        f"积分不足！需要 {VERIFY_COST} 积分，当前 {current_balance} 积分。\n\n"
-        "获取积分方式:\n"
-        "- 每日签到 /qd\n"
-        "- 邀请好友 /invite\n"
-        "- 使用卡密 /use <卡密>"
+        f"⚠️ Insufficient points! Need {VERIFY_COST}, have {current_balance}.\n"
+        f"نقاط غير كافية! مطلوب {VERIFY_COST}، لديك {current_balance}.\n\n"
+        "💰 Earn points / اكسب نقاط:\n"
+        "- /qd - Daily check-in / تسجيل يومي\n"
+        "- /invite - Invite friends / دعوة أصدقاء\n"
+        "- /use <code> - Redeem code / استرداد كود"
     )
 
 
 def get_verify_usage_message(command: str, service_name: str) -> str:
-    """获取验证命令使用说明"""
+    """Get verify usage message / رسالة استخدام التحقق"""
     return (
-        f"使用方法: {command} <SheerID链接>\n\n"
-        "示例:\n"
+        f"📖 Usage / الاستخدام: {command} <SheerID link>\n\n"
+        "Example / مثال:\n"
         f"{command} https://services.sheerid.com/verify/xxx/?verificationId=xxx\n\n"
-        "获取验证链接:\n"
-        f"1. 访问 {service_name} 认证页面\n"
-        "2. 开始认证流程\n"
-        "3. 复制浏览器地址栏中的完整 URL\n"
-        f"4. 使用 {command} 命令提交"
+        "How to get the link / كيف تحصل على الرابط:\n"
+        f"1. Visit {service_name} verification page\n"
+        f"   قم بزيارة صفحة تحقق {service_name}\n"
+        "2. Start verification process / ابدأ عملية التحقق\n"
+        "3. Copy the full URL from browser / انسخ الرابط الكامل\n"
+        f"4. Submit with {command} / أرسل باستخدام {command}"
     )

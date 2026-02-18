@@ -201,12 +201,14 @@ docker run -d \
 /qd                 # 每日签到（+1积分）
 /invite             # 生成邀请链接（+2积分/人）
 /use <卡密>         # 使用卡密兑换积分
+/status             # 查看认证历史记录
 /verify <链接>      # Gemini One Pro 认证
 /verify2 <链接>     # ChatGPT Teacher K12 认证
 /verify3 <链接>     # Spotify Student 认证
 /verify4 <链接>     # Bolt.new Teacher 认证
 /verify5 <链接>     # YouTube Premium Student 认证
-/getV4Code <id>     # 获取 Bolt.new 认证码
+/check <id>         # 查询任何认证结果
+/getV4Code <id>     # 获取 Bolt.new 认证码（/check 别名）
 /help               # 查看帮助信息
 ```
 
@@ -240,8 +242,9 @@ docker run -d \
    - 提交到 SheerID 平台
 
 4. **获取结果**
-   - 审核通常在几分钟内完成
-   - 成功后会返回跳转链接
+   - 机器人自动轮询等待审核结果（最长 60 秒）
+   - 成功后会返回跳转链接或激活码
+   - 如果超时，使用 `/check <id>` 稍后查询结果
 
 ---
 
@@ -388,6 +391,15 @@ in the Software without restriction...
 ---
 
 ## 📝 更新日志
+
+### v2.1.0 (2025-02-18)
+
+- ✨ 新增 `/check` 命令：查询任何认证结果
+- ✨ 新增 `/status` 命令：查看认证历史记录
+- 🚀 自动轮询：认证提交后自动等待结果（最长 60 秒）
+- 🎯 提升 Gemini One Pro 成功率：真实美国姓名、随机校区、动态学期、随机课程表
+- 💬 所有机器人消息改为中英/英阿双语
+- 📝 改进错误消息格式，显示更清晰的 SheerID 错误详情
 
 ### v2.0.0 (2025-01-12)
 

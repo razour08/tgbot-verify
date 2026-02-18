@@ -201,12 +201,14 @@ docker run -d \
 /qd                 # Daily check-in (+1 point)
 /invite             # Generate invitation link (+2 points per person)
 /use <code>         # Redeem points with code
+/status             # View verification history
 /verify <link>      # Gemini One Pro verification
 /verify2 <link>     # ChatGPT Teacher K12 verification
 /verify3 <link>     # Spotify Student verification
 /verify4 <link>     # Bolt.new Teacher verification
 /verify5 <link>     # YouTube Premium Student verification
-/getV4Code <id>     # Get Bolt.new verification code
+/check <id>         # Check any verification result
+/getV4Code <id>     # Get Bolt.new code (alias for /check)
 /help               # View help information
 ```
 
@@ -240,8 +242,9 @@ docker run -d \
    - Submits to SheerID platform
 
 4. **Get Results**
-   - Review usually completes within minutes
-   - Success returns redirect link
+   - Bot auto-polls for review result (up to 60 seconds)
+   - Success returns redirect link or activation code
+   - If timeout, use `/check <id>` to query result later
 
 ---
 
@@ -388,6 +391,15 @@ in the Software without restriction...
 ---
 
 ## 📝 Changelog
+
+### v2.1.0 (2025-02-18)
+
+- ✨ Added `/check` command: query any verification result by ID
+- ✨ Added `/status` command: view verification history
+- 🚀 Auto-polling: bot automatically waits for verification result (up to 60s)
+- 🎯 Improved Gemini One Pro success rate: real American names, random campus rotation, dynamic semester, randomized courses
+- 💬 All bot messages now bilingual (EN/AR)
+- 📝 Improved error messages with cleaner SheerID error details
 
 ### v2.0.0 (2025-01-12)
 

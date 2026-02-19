@@ -14,8 +14,10 @@ services:
       - mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    networks:
+      - backend
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_PASSWORD}"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_PASSWORD}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,13 +28,51 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Telegram Bot
+  # ============ FREE US VPN (Gluetun + Windscribe) ============
+  # All tgbot traffic goes through this US VPN tunnel.
+  # Sign up free at https://windscribe.com (10GB/month free).
+  # Set VPN_USER and VPN_PASS in your .env file.
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: sheerid-vpn
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=windscribe
+      - VPN_TYPE=openvpn
+      - OPENVPN_USER=${VPN_USER}
+      - OPENVPN_PASSWORD=${VPN_PASS}
+      # US servers for SheerID
+      - SERVER_REGIONS=US East,US Central,US West
+      - TZ=UTC
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "https://api.ipify.org" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Telegram Bot — ALL traffic routed through VPN
   tgbot:
     build: .
     container_name: sheerid-tgbot
     restart: unless-stopped
+    # Route ALL network traffic through VPN container
+    network_mode: "service:gluetun"
     depends_on:
       mysql:
+        condition: service_healthy
+      gluetun:
         condition: service_healthy
     environment:
       - TZ=UTC
@@ -42,14 +82,12 @@ services:
       - CHANNEL_USERNAME=${CHANNEL_USERNAME:-pk_oa}
       - CHANNEL_URL=${CHANNEL_URL:-https://t.me/pk_oa}
       - ADMIN_USER_ID=${ADMIN_USER_ID}
-      # MySQL Config - connects to mysql service
+      # MySQL Config — use 'mysql' hostname (reachable via gluetun's shared network)
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
       - MYSQL_USER=${MYSQL_USER:-tgbot_user}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE:-tgbot_verify}
-      # Proxy for SheerID (residential recommended)
-      - PROXY_URL=${PROXY_URL:-}
     volumes:
       - ./logs:/app/logs
     logging:
@@ -57,6 +95,10 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+networks:
+  backend:
+    driver: bridge
 
 volumes:
   mysql_data:

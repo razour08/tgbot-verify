@@ -9,7 +9,7 @@
 > 
 > Based on a legacy version with many improvements and new features.
 
-[中文文档](README.md) | English | [العربية](README_AR.md)
+[中文文档](README.md) | English | [العربية](README.md)
 
 ---
 

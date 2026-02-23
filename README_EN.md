@@ -7,7 +7,7 @@
 
 > 🤖 Automated SheerID Student/Teacher Verification Telegram Bot
 > 
-> Based on [@auto_sheerid_bot](https://t.me/auto_sheerid_bot) GGBond's legacy code with improvements
+> Based on a legacy version with many improvements and new features.
 
 [中文文档](README.md) | English | [العربية](README_AR.md)
 
@@ -81,7 +81,7 @@ A Python-based Telegram bot that automates SheerID student/teacher identity veri
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/PastKing/tgbot-verify.git
+git clone https://github.com/yourusername/your-repo.git
 cd tgbot-verify
 ```
 
@@ -138,7 +138,7 @@ The `docker-compose.yml` includes two services — no external MySQL installatio
 
 ```bash
 # 1. Clone the project
-git clone https://github.com/PastKing/tgbot-verify.git
+git clone https://github.com/yourusername/your-repo.git
 cd tgbot-verify
 
 # 2. Configure environment variables
@@ -285,8 +285,8 @@ tgbot-verify/
 | Variable | Required | Description | Default |
 |----------|----------|-------------|---------|
 | `BOT_TOKEN` | ✅ | Telegram Bot Token | - |
-| `CHANNEL_USERNAME` | ❌ | Channel username | pk_oa |
-| `CHANNEL_URL` | ❌ | Channel link | https://t.me/pk_oa |
+| `CHANNEL_USERNAME` | ❌ | Channel username | your_channel_username |
+| `CHANNEL_URL` | ❌ | Channel link | https://t.me/your_channel |
 | `ADMIN_USER_ID` | ✅ | Admin Telegram ID | - |
 | `MYSQL_HOST` | ✅ | MySQL host address | localhost |
 | `MYSQL_PORT` | ❌ | MySQL port | 3306 |
@@ -335,8 +335,8 @@ Since SheerID platform's `programId` may be updated periodically, the following 
 
 ## 🔗 Links
 
-- 📺 **Telegram Channel**: https://t.me/pk_oa
-- 🐛 **Issue Tracking**: [GitHub Issues](https://github.com/PastKing/tgbot-verify/issues)
+- 📺 **Telegram Channel**: https://t.me/your_channel
+- 🐛 **Issue Tracking**: [GitHub Issues](https://github.com/yourusername/your-repo/issues)
 - 📖 **Deployment Guide**: [DEPLOY.md](DEPLOY.md)
 
 ---
@@ -378,7 +378,7 @@ in the Software without restriction...
 
 ## 🙏 Acknowledgments
 
-- Thanks to [@auto_sheerid_bot](https://t.me/auto_sheerid_bot) GGBond for the legacy code foundation
+- Thanks to all contributors of this project.
 - Thanks to all developers who contributed to this project
 - Thanks to SheerID platform for providing verification services
 
@@ -420,5 +420,5 @@ in the Software without restriction...
 </p>
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/PastKing">PastKing</a>
+  Made with ❤️
 </p>

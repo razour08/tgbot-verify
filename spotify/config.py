@@ -1,14 +1,14 @@
-# SheerID 验证配置文件
+# ملف إعدادات التحقق لـ SheerID
 
-# SheerID API 配置
+# إعدادات واجهة برمجة تطبيقات SheerID (API)
 PROGRAM_ID = '67c8c14f5f17a83b745e3f82'
 SHEERID_BASE_URL = 'https://services.sheerid.com'
 MY_SHEERID_URL = 'https://my.sheerid.com'
 
-# 文件大小限制
+# الحد الأقصى لحجم الملف
 MAX_FILE_SIZE = 1 * 1024 * 1024  # 1MB
 
-# 学校配置 - Pennsylvania State University 多校区
+# إعدادات المدرسة - فروع جامعة بنسلفانيا الحكومية (Pennsylvania State University)
 SCHOOLS = {
     '2565': {
         'id': 2565,
@@ -132,6 +132,6 @@ SCHOOLS = {
     }
 }
 
-# 默认学校
+# المدرسة الافتراضية
 DEFAULT_SCHOOL_ID = '2565'
 

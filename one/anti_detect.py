@@ -1,8 +1,8 @@
-"""Anti-detection module for SheerID API requests.
+"""وحدة مكافحة الكشف لطلبات واجهة برمجة تطبيقات SheerID.
 
-Provides browser-like headers, NewRelic tracking, TLS fingerprint
-spoofing (via curl_cffi), dynamic fingerprints, human-like delays,
-session warmup, and proxy support.
+توفر ترويسات شبيهة بالمتصفح، وتتبع NewRelic، وتزييف بصمة TLS
+(عبر curl_cffi)، وبصمات ديناميكية، وتأخيرات شبيهة بالبشر،
+وتهيئة الجلسات (warmup)، ودعم الوكلاء (proxy).
 """
 
 import os
@@ -16,15 +16,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# ===================== CONFIG =====================
-# Single proxy or multiple proxies separated by | (pipe)
-# Format: host:port:user:pass  or  http://user:pass@host:port
-# Example: 1.2.3.4:6000:user:pass|5.6.7.8:7000:user:pass
+# ===================== التكوين (CONFIG) =====================
+# وكيل (proxy) واحد أو وكلاء متعددون مفصولون بعلامة | (أنبوب)
+# التنسيق: المضيف:المنفذ:المستخدم:كلمة_المرور  أو  http://المستخدم:كلمة_المرور@المضيف:المنفذ
+# مثال: 1.2.3.4:6000:user:pass|5.6.7.8:7000:user:pass
 PROXY_URL = os.environ.get("PROXY_URL", "")
 
 
 def get_random_proxy() -> str | None:
-    """Pick a random proxy from PROXY_URL (supports multiple, separated by |)."""
+    """اختيار وكيل عشوائي من PROXY_URL (يدعم وكلاء متعددين مفصولين بـ |)."""
     if not PROXY_URL:
         return None
     proxies = [p.strip() for p in PROXY_URL.split("|") if p.strip()]
@@ -32,7 +32,7 @@ def get_random_proxy() -> str | None:
         return None
     return random.choice(proxies)
 
-# ===================== CHROME VERSIONS =====================
+# ===================== إصدارات كروم (CHROME VERSIONS) =====================
 IMPERSONATE_OPTIONS = {
     "chrome": ["chrome131", "chrome130", "chrome124", "chrome120"],
     "edge": ["edge131", "edge127", "edge101"],
@@ -40,21 +40,21 @@ IMPERSONATE_OPTIONS = {
 }
 DEFAULT_IMPERSONATE = "chrome131"
 
-# ===================== USER AGENTS =====================
+# ===================== وكلاء المستخدم (USER AGENTS) =====================
 USER_AGENTS = [
-    # Chrome 131
+    # كروم 131
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    # Chrome 130
+    # كروم 130
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-    # Chrome 131 Linux
+    # كروم 131 نظام Linux
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    # Edge 131
+    # إيدج 131
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
 ]
 
-# ===================== PLATFORMS (sec-ch-ua) =====================
+# ===================== المنصات (PLATFORMS sec-ch-ua) =====================
 PLATFORMS = [
     ("Windows", '"Windows"', '"Chromium";v="131", "Google Chrome";v="131", "Not_A Brand";v="24"'),
     ("Windows", '"Windows"', '"Chromium";v="130", "Google Chrome";v="130", "Not_A Brand";v="24"'),
@@ -75,9 +75,9 @@ RESOLUTIONS = [
 ]
 
 
-# ===================== FINGERPRINT =====================
+# ===================== البصمة (FINGERPRINT) =====================
 def generate_fingerprint() -> str:
-    """Generate realistic browser fingerprint hash."""
+    """توليد تجزئة واقعية لبصمة المتصفح."""
     components = [
         str(int(time.time() * 1000)),
         str(random.random()),
@@ -86,17 +86,17 @@ def generate_fingerprint() -> str:
         random.choice(LANGUAGES).split(",")[0],
         random.choice(["Win32", "MacIntel", "Linux x86_64"]),
         random.choice(["Google Inc.", "Apple Computer, Inc.", ""]),
-        str(random.randint(2, 16)),   # CPU cores
-        str(random.randint(4, 32)),   # device memory
-        str(random.randint(0, 1)),    # touch support
+        str(random.randint(2, 16)),   # أنوية المعالج (CPU cores)
+        str(random.randint(4, 32)),   # ذاكرة الجهاز (device memory)
+        str(random.randint(0, 1)),    # دعم اللمس (touch support)
         str(uuid.uuid4()),
     ]
     return hashlib.md5("|".join(components).encode()).hexdigest()
 
 
-# ===================== NEWRELIC HEADERS =====================
+# ===================== ترويسات NEWRELIC =====================
 def _newrelic_headers() -> dict:
-    """Generate NewRelic tracking headers required by SheerID."""
+    """توليد ترويسات تتبع NewRelic المطلوبة بواسطة SheerID."""
     trace_id = uuid.uuid4().hex + uuid.uuid4().hex[:8]
     trace_id = trace_id[:32]
     span_id = uuid.uuid4().hex[:16]
@@ -120,9 +120,9 @@ def _newrelic_headers() -> dict:
     }
 
 
-# ===================== HEADERS =====================
+# ===================== الترويسات (HEADERS) =====================
 def get_sheerid_headers() -> dict:
-    """Full browser-like headers for SheerID API calls."""
+    """ترويسات كاملة شبيهة بالمتصفح لطلبات واجهة برمجة تطبيقات SheerID."""
     ua = random.choice(USER_AGENTS)
     platform = random.choice(PLATFORMS)
     lang = random.choice(LANGUAGES)
@@ -150,9 +150,9 @@ def get_sheerid_headers() -> dict:
     }
 
 
-# ===================== DELAYS =====================
+# ===================== التأخيرات (DELAYS) =====================
 def human_delay(min_ms: int = 300, max_ms: int = 1200):
-    """Sleep with human-like timing (gamma distribution when possible)."""
+    """تأخير بتوقيت شبيه بالبشر (توزيع جاما عندما يكون ذلك ممكناً)."""
     try:
         import numpy as np
         shape, scale = 2.0, (max_ms - min_ms) / 4000
@@ -164,9 +164,9 @@ def human_delay(min_ms: int = 300, max_ms: int = 1200):
     time.sleep(delay)
 
 
-# ===================== SESSION =====================
+# ===================== الجلسة (SESSION) =====================
 def _format_proxy(proxy: str) -> str | None:
-    """Normalize various proxy formats to http://... URL."""
+    """تسوية تنسيقات الوكيل المختلفة إلى رابط URL يبدأ بـ http://..."""
     if not proxy:
         return None
     proxy = proxy.strip()
@@ -183,25 +183,25 @@ def _format_proxy(proxy: str) -> str | None:
 
 
 def create_session(proxy: str = None):
-    """Create HTTP session with best available library.
+    """إنشاء جلسة HTTP بأفضل مكتبة متاحة.
 
-    Priority: curl_cffi (TLS spoofing)  > httpx > requests
+    الأولوية: curl_cffi (تزييف TLS) > httpx > requests
 
     Args:
-        proxy: Proxy URL override. Falls back to PROXY_URL env var.
+        proxy: تجاوز رابط الوكيل (Proxy URL). يتم الرجوع إلى متغير البيئة PROXY_URL في حالة عدم التحديد.
 
     Returns:
-        tuple: (session, library_name)
+        مجموعة متصلة (tuple): (الجلسة، اسم_المكتبة)
     """
     proxy = _format_proxy(proxy or get_random_proxy())
     proxies = None
     if proxy:
         proxies = {"http": proxy, "https": proxy, "all://": proxy}
-        logger.info(f"🔒 Proxy configured: {proxy[:35]}...")
+        logger.info(f"🔒 تم تكوين الوكيل: {proxy[:35]}...")
 
     imp = DEFAULT_IMPERSONATE
 
-    # 1. Try curl_cffi (best — TLS fingerprint matches real Chrome)
+    # 1. جرب curl_cffi (الأفضل — بصمة TLS تتطابق مع متصفح كروم حقيقي)
     try:
         from curl_cffi import requests as curl_requests
 
@@ -212,42 +212,42 @@ def create_session(proxy: str = None):
                     if proxies
                     else curl_requests.Session(impersonate=ver)
                 )
-                logger.info(f"✅ Anti-detect: curl_cffi + {ver} TLS impersonation")
+                logger.info(f"✅ مكافحة الكشف: مكتبة curl_cffi + انتحال TLS لإصدار {ver}")
                 return sess, "curl_cffi"
             except Exception:
                 continue
 
-        # curl_cffi without impersonation
+        # curl_cffi بدون انتحال شخصية (impersonation)
         sess = curl_requests.Session(proxies=proxies) if proxies else curl_requests.Session()
-        logger.warning("⚠️  curl_cffi loaded but TLS impersonation failed")
+        logger.warning("⚠️  تم تحميل curl_cffi ولكن فشل انتحال TLS")
         return sess, "curl_cffi"
 
     except ImportError:
-        logger.warning("❌ curl_cffi not installed — TLS fingerprint detectable!")
-        logger.warning("   Install: pip install curl_cffi")
+        logger.warning("❌ مكتبة curl_cffi غير مثبتة — يمكن كشف بصمة TLS!")
+        logger.warning("   للتثبيت: pip install curl_cffi")
 
-    # 2. httpx (detectable TLS but functional)
+    # 2. مكتبة httpx (بصمة TLS قابلة للكشف لكنها عملية)
     try:
         import httpx
         proxy_url = proxies.get("all://") if proxies else None
         sess = httpx.Client(timeout=30, proxy=proxy_url)
-        logger.info("⚠️  Anti-detect: httpx (no TLS spoofing)")
+        logger.info("⚠️  مكافحة الكشف: مكتبة httpx (بدون تزييف TLS)")
         return sess, "httpx"
     except ImportError:
         pass
 
-    # 3. Fallback to requests
+    # 3. الرجوع إلى مكتبة requests (الأسوأ)
     import requests
     sess = requests.Session()
     if proxies:
         sess.proxies = proxies
-    logger.warning("❌ Anti-detect: requests (HIGH detection risk)")
+    logger.warning("❌ مكافحة الكشف: مكتبة requests (خطر كشف عالي جداً)")
     return sess, "requests"
 
 
-# ===================== WARMUP =====================
+# ===================== التمهيد (WARMUP) =====================
 def warm_session(session, program_id: str = None):
-    """Pre-requests to simulate real browser page load."""
+    """طلبات مسبقة لمحاكاة تحميل صفحة متصفح حقيقي."""
     base = "https://services.sheerid.com"
     hdrs = get_sheerid_headers()
 

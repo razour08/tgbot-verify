@@ -7,7 +7,7 @@
 
 > 🤖 بوت تيليجرام للتحقق التلقائي من هوية الطلاب/المعلمين عبر منصة SheerID
 > 
-> مبني على الكود القديم لـ [@auto_sheerid_bot](https://t.me/auto_sheerid_bot) GGBond مع تحسينات
+> مبني على إصدار سابق مع العديد من التحسينات والميزات الجديدة.
 
 [中文文档](README.md) | [English](README_EN.md) | العربية
 
@@ -81,7 +81,7 @@
 ### 1. استنساخ المشروع
 
 ```bash
-git clone https://github.com/PastKing/tgbot-verify.git
+git clone https://github.com/yourusername/your-repo.git
 cd tgbot-verify
 ```
 
@@ -138,7 +138,7 @@ python bot.py
 
 ```bash
 # 1. استنساخ المشروع
-git clone https://github.com/PastKing/tgbot-verify.git
+git clone https://github.com/yourusername/your-repo.git
 cd tgbot-verify
 
 # 2. إعداد متغيرات البيئة
@@ -285,8 +285,8 @@ tgbot-verify/
 | المتغير | مطلوب | الوصف | القيمة الافتراضية |
 |---------|-------|-------|-------------------|
 | `BOT_TOKEN` | ✅ | رمز بوت تيليجرام | - |
-| `CHANNEL_USERNAME` | ❌ | اسم مستخدم القناة | pk_oa |
-| `CHANNEL_URL` | ❌ | رابط القناة | https://t.me/pk_oa |
+| `CHANNEL_USERNAME` | ❌ | اسم مستخدم القناة | your_channel_username |
+| `CHANNEL_URL` | ❌ | رابط القناة | https://t.me/your_channel |
 | `ADMIN_USER_ID` | ✅ | معرف تيليجرام للمسؤول | - |
 | `MYSQL_HOST` | ✅ | عنوان خادم MySQL | localhost |
 | `MYSQL_PORT` | ❌ | منفذ MySQL | 3306 |
@@ -335,8 +335,8 @@ REGISTER_REWARD = 1    # نقاط مكافأة التسجيل
 
 ## 🔗 روابط
 
-- 📺 **قناة تيليجرام**: https://t.me/pk_oa
-- 🐛 **تتبع المشاكل**: [GitHub Issues](https://github.com/PastKing/tgbot-verify/issues)
+- 📺 **قناة تيليجرام**: https://t.me/your_channel
+- 🐛 **تتبع المشاكل**: [GitHub Issues](https://github.com/yourusername/your-repo/issues)
 - 📖 **دليل النشر**: [DEPLOY.md](DEPLOY.md)
 
 ---
@@ -378,7 +378,7 @@ in the Software without restriction...
 
 ## 🙏 شكر وتقدير
 
-- شكراً لـ [@auto_sheerid_bot](https://t.me/auto_sheerid_bot) GGBond على أساس الكود القديم
+- شكراً لجميع المساهمين في تطوير هذا المشروع.
 - شكراً لجميع المطورين الذين ساهموا في هذا المشروع
 - شكراً لمنصة SheerID على تقديم خدمات التحقق
 
@@ -420,5 +420,5 @@ in the Software without restriction...
 </p>
 
 <p align="center">
-  صنع بـ ❤️ بواسطة <a href="https://github.com/PastKing">PastKing</a>
+  صنع بـ ❤️
 </p>

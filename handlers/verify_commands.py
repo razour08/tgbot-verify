@@ -1,4 +1,4 @@
-"""Verification command handlers / معالجات أوامر التحقق"""
+"""معالجات أوامر التحقق (Verification command handlers)"""
 import asyncio
 import logging
 import httpx
@@ -17,7 +17,7 @@ from youtube.sheerid_verifier import SheerIDVerifier as YouTubeVerifier
 from Boltnew.sheerid_verifier import SheerIDVerifier as BoltnewVerifier
 from utils.messages import get_insufficient_balance_message, get_verify_usage_message
 
-# Try to import concurrency control
+# محاولة استيراد التحكم في التزامن (Concurrency control)
 try:
     from utils.concurrency import get_verification_semaphore
 except ImportError:
@@ -59,30 +59,30 @@ def msg_refunded(cost):
 
 
 def _clean_error(result):
-    """Extract a clean error message from the verifier result."""
+    """استخراج رسالة خطأ واضحة (clean) من نتيجة المُدقق (verifier)."""
     if isinstance(result, dict):
-        # Try to get systemErrorMessage first
+        # محاولة الحصول على systemErrorMessage أولاً
         sys_err = result.get("systemErrorMessage", "")
         if sys_err:
-            # Extract the meaningful part (e.g. "can not perform step 'X'")
+            # استخراج الجزء المفيد (مثال: "can not perform step 'X'")
             return sys_err
 
-        # Try errorIds
+        # محاولة الحصول على errorIds
         error_ids = result.get("errorIds", [])
         if error_ids:
             return ", ".join(error_ids)
 
-        # Try message field
+        # محاولة الحصول على حقل message
         msg = result.get("message", "")
         if msg and len(msg) < 200:
             return msg
 
-        # Try currentStep
+        # محاولة الحصول على currentStep
         step = result.get("currentStep", "")
         if step == "error":
             return "Verification rejected by SheerID / تم رفض التحقق من SheerID"
 
-    # Fallback: if it's a string, truncate if too long
+    # الاحتياطي (Fallback): إذا كانت سلسلة نصية، قصها إذا كانت أطول من اللازم
     error_str = str(result) if not isinstance(result, str) else result
     if len(error_str) > 150:
         return "Verification rejected / تم رفض التحقق"
@@ -91,7 +91,7 @@ def _clean_error(result):
 
 def msg_verify_failed(error, cost):
     clean = _clean_error(error) if isinstance(error, dict) else str(error)
-    # Truncate if still too long
+    # قص السلسلة إذا كانت لا تزال أطول من اللازم
     if len(clean) > 200:
         clean = clean[:200] + "..."
     return (
@@ -127,15 +127,15 @@ async def _poll_sheerid_result(
     max_wait: int = 60,
     interval: int = 10
 ) -> Optional[Dict]:
-    """Poll SheerID API for final verification result.
+    """الاستعلام المستمر (Poll) عن واجهة برمجة تطبيقات SheerID للحصول على نتيجة التحقق النهائية.
 
     Args:
-        verification_id: SheerID verification ID
-        max_wait: Maximum wait in seconds (default 60s)
-        interval: Polling interval in seconds
+        verification_id: معرّف التحقق الخاص بـ SheerID
+        max_wait: أقصى مدة انتظار بالثواني (الافتراضي: 60 ثانية)
+        interval: الفاصل الزمني للاستعلام بالثواني
 
     Returns:
-        dict with keys: step, redirect_url, reward_code — or None on timeout/error
+        قاموس (dict) يحتوي على المفاتيح: step, redirect_url, reward_code — أو None عند انتهاء مهلة الاتصال (timeout) أو حدوث خطأ
     """
     start_time = time.time()
 
@@ -168,7 +168,7 @@ async def _poll_sheerid_result(
                         logger.warning(f"Review failed: {data.get('errorIds', [])}")
                         return {"step": "error", "error_ids": data.get("errorIds", [])}
 
-                # Still pending, wait and retry
+                # لا يزال معلقاً (Pending)، انتظر وأعد المحاولة
                 await asyncio.sleep(interval)
 
             except Exception as e:
@@ -181,9 +181,9 @@ async def _poll_sheerid_result(
 async def _handle_success_with_polling(
     processing_msg, result, verification_id, service_name, user_id, db, v_type, url
 ):
-    """Handle a successful verification result, polling if pending."""
+    """معالجة نتيجة التحقق الناجحة، مع الاستعلام المستمر (polling) إذا كانت الحالة معلقة."""
 
-    # If redirect_url is already present, show it immediately
+    # إذا كان رابط التوجيه (redirect_url) موجوداً، اعرضه فوراً
     if result.get("redirect_url") and not result.get("pending"):
         result_msg = (
             f"✅ {service_name} verification successful!\n"
@@ -194,7 +194,7 @@ async def _handle_success_with_polling(
         db.add_verification(user_id, v_type, url, "success", str(result), verification_id)
         return
 
-    # Pending — tell user we're waiting and start polling
+    # معلّق (Pending) — إبلاغ المستخدم بأننا ننتظر وبدء الاستعلام المستمر
     await processing_msg.edit_text(
         f"✅ {service_name} — document submitted!\n"
         f"تم تقديم مستند {service_name}!\n\n"
@@ -232,7 +232,7 @@ async def _handle_success_with_polling(
         db.add_verification(user_id, v_type, url, "failed", str(poll_result), verification_id)
 
     else:
-        # Timed out — save as pending, tell user to check later
+        # انتهاء مهلة الاتصال (Timed out) — الحفظ كمعلق (Pending)، الطلب من المستخدم التحقق لاحقاً
         await processing_msg.edit_text(
             f"✅ {service_name} — document submitted!\n"
             f"تم تقديم المستند بنجاح!\n\n"
@@ -248,11 +248,11 @@ async def _handle_success_with_polling(
 
 
 # ============================================================
-# Verify Commands
+# أوامر التحقق (Verify Commands)
 # ============================================================
 
 async def verify_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /verify - Gemini One Pro"""
+    """معالجة الأمر /verify - الخاص بـ Gemini One Pro"""
     user_id = update.effective_user.id
 
     if db.is_user_blocked(user_id):
@@ -315,7 +315,7 @@ async def verify_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db:
 
 
 async def verify2_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /verify2 - ChatGPT Teacher K12"""
+    """معالجة الأمر /verify2 - الخاص بـ ChatGPT Teacher K12"""
     user_id = update.effective_user.id
 
     if db.is_user_blocked(user_id):
@@ -378,7 +378,7 @@ async def verify2_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
 
 
 async def verify3_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /verify3 - Spotify Student"""
+    """معالجة الأمر /verify3 - الخاص بـ Spotify Student"""
     user_id = update.effective_user.id
 
     if db.is_user_blocked(user_id):
@@ -448,7 +448,7 @@ async def verify3_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
 
 
 async def verify4_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /verify4 - Bolt.new Teacher (auto-fetch code)"""
+    """معالجة الأمر /verify4 - الخاص بـ Bolt.new Teacher (جلب تلقائي للكود)"""
     user_id = update.effective_user.id
 
     if db.is_user_blocked(user_id):
@@ -524,7 +524,7 @@ async def verify4_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
             f"(Max wait / انتظار أقصى: 60s)"
         )
 
-        # Auto-fetch using shared polling
+        # جلب تلقائي (Auto-fetch) باستخدام مساعد الاستعلام المشترك
         poll_result = await _poll_sheerid_result(vid, max_wait=60, interval=10)
 
         if poll_result and poll_result.get("step") == "success":
@@ -569,7 +569,7 @@ async def verify4_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
 
 
 async def verify5_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /verify5 - YouTube Student Premium"""
+    """معالجة الأمر /verify5 - الخاص بـ YouTube Student Premium"""
     user_id = update.effective_user.id
 
     if db.is_user_blocked(user_id):
@@ -639,11 +639,11 @@ async def verify5_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
 
 
 # ============================================================
-# General check command (works for all services)
+# أمر الفحص العام (يعمل مع جميع الخدمات)
 # ============================================================
 
 async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /check - Query any verification status by ID"""
+    """معالجة الأمر /check - الاستعلام عن حالة أي تحقق من خلال المعرّف (ID)"""
     user_id = update.effective_user.id
 
     if db.is_user_blocked(user_id):
@@ -697,7 +697,7 @@ async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
             created_ts = data.get("created")
             updated_ts = data.get("updated")
 
-            # -- Build the info block shown for all steps --
+            # -- بناء كتلة المعلومات المعروضة في جميع الخطوات --
             info_lines = []
             info_lines.append(f"📌 Step / الخطوة: {current_step}")
             if segment:
@@ -727,7 +727,7 @@ async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
 
             info_block = "\n".join(info_lines)
 
-            # -- Handle each step --
+            # -- معالجة كل خطوة --
             if current_step == "success":
                 result_msg = "✅ Verification successful! / نجح التحقق!\n\n"
                 if redirect_url:
@@ -745,7 +745,7 @@ async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
                 await processing_msg.edit_text(result_msg)
 
             else:
-                # Covers: pending, docUpload, collectStudentPersonalInfo, etc.
+                # يشمل: pending، docUpload، collectStudentPersonalInfo، إلخ.
                 if rejection_reasons:
                     header = "⚠️ Verification has rejection flags / يوجد أسباب رفض:\n\n"
                 else:
@@ -767,7 +767,7 @@ async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
         )
 
 
-# Keep /getV4Code as alias for backward compatibility
+# الإبقاء على /getV4Code كاسم مستعار لتوافق الإصدارات السابقة
 async def getV4Code_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /getV4Code - alias for /check (backward compatibility)"""
+    """معالجة الأمر /getV4Code - اسم مستعار للأمر /check (لتوافق الإصدارات السابقة)"""
     await check_command(update, context, db)

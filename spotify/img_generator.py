@@ -1,4 +1,4 @@
-"""PNG 学生证生成模块 - Penn State LionPATH"""
+"""وحدة إنشاء صور بطاقات الطلاب PNG - Penn State LionPATH"""
 import random
 from datetime import datetime
 from io import BytesIO
@@ -6,14 +6,14 @@ import base64
 
 
 def generate_psu_id():
-    """生成随机 PSU ID (9位数字)"""
+    """إنشاء رقم تعريفي عشوائي (PSU ID) مكون من 9 أرقام"""
     return f"9{random.randint(10000000, 99999999)}"
 
 
 def generate_psu_email(first_name, last_name):
     """
-    生成 PSU 邮箱
-    格式: firstName.lastName + 3-4位数字 @psu.edu
+    إنشاء بريد إلكتروني لجامعة PSU
+    التنسيق: firstName.lastName + 3-4 أرقام @psu.edu
     """
     digit_count = random.choice([3, 4])
     digits = ''.join([str(random.randint(0, 9)) for _ in range(digit_count)])
@@ -23,21 +23,21 @@ def generate_psu_email(first_name, last_name):
 
 def generate_html(first_name, last_name, school_id='2565'):
     """
-    生成 Penn State LionPATH HTML
+    إنشاء محتوى HTML لـ Penn State LionPATH
 
     Args:
-        first_name: 名字
-        last_name: 姓氏
-        school_id: 学校 ID
+        first_name: الاسم الأول
+        last_name: اسم العائلة
+        school_id: معرّف المدرسة (ID)
 
     Returns:
-        str: HTML 内容
+        str: محتوى HTML
     """
     psu_id = generate_psu_id()
     name = f"{first_name} {last_name}"
     date = datetime.now().strftime('%m/%d/%Y, %I:%M:%S %p')
 
-    # 随机选择专业
+    # اختيار تخصص عشوائي
     majors = [
         'Computer Science (BS)',
         'Software Engineering (BS)',
@@ -66,7 +66,7 @@ def generate_html(first_name, last_name, school_id='2565'):
 
         body {{
             font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            background-color: #e0e0e0; /* 浏览器背景 */
+            background-color: #e0e0e0; /* خلفية المتصفح */
             margin: 0;
             padding: 20px;
             color: var(--text-color);
@@ -74,7 +74,7 @@ def generate_html(first_name, last_name, school_id='2565'):
             justify-content: center;
         }}
 
-        /* 模拟浏览器窗口 */
+        /* محاكاة نافذة المتصفح */
         .viewport {{
             width: 100%;
             max-width: 1100px;
@@ -85,7 +85,7 @@ def generate_html(first_name, last_name, school_id='2565'):
             flex-direction: column;
         }}
 
-        /* 顶部导航栏 LionPATH */
+        /* شريط التنقل العلوي لـ LionPATH */
         .header {{
             background-color: var(--psu-blue);
             color: white;
@@ -102,7 +102,7 @@ def generate_html(first_name, last_name, school_id='2565'):
             gap: 15px;
         }}
 
-        /* PSU Logo 模拟 */
+        /* محاكاة شعار PSU */
         .psu-logo {{
             font-family: "Georgia", serif;
             font-size: 20px;
@@ -136,7 +136,7 @@ def generate_html(first_name, last_name, school_id='2565'):
         .nav-item {{ cursor: pointer; }}
         .nav-item.active {{ color: var(--psu-blue); font-weight: bold; border-bottom: 2px solid var(--psu-blue); padding-bottom: 8px; }}
 
-        /* 主内容区 */
+        /* منطقة المحتوى الرئيسية */
         .content {{
             padding: 30px;
             flex: 1;
@@ -167,7 +167,7 @@ def generate_html(first_name, last_name, school_id='2565'):
             font-weight: bold;
         }}
 
-        /* 学生信息卡片 */
+        /* بطاقة معلومات الطالب */
         .student-card {{
             background: #fcfcfc;
             border: 1px solid #e0e0e0;
@@ -185,7 +185,7 @@ def generate_html(first_name, last_name, school_id='2565'):
             padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #b2f5ea;
         }}
 
-        /* 课程表 */
+        /* الجدول الدراسي */
         .schedule-table {{
             width: 100%;
             border-collapse: collapse;
@@ -208,7 +208,7 @@ def generate_html(first_name, last_name, school_id='2565'):
         .course-code {{ font-weight: bold; color: var(--psu-blue); }}
         .course-title {{ font-weight: 500; }}
 
-        /* 打印适配 */
+        /* توافق الطباعة (Print override) */
         @media print {{
             body {{ background: white; padding: 0; }}
             .viewport {{ box-shadow: none; max-width: 100%; min-height: auto; }}
@@ -342,66 +342,66 @@ def generate_html(first_name, last_name, school_id='2565'):
 
 def generate_image(first_name, last_name, school_id='2565'):
     """
-    生成 Penn State LionPATH 截图 PNG
+    إنشاء لقطة شاشة لـ Penn State LionPATH بصيغة PNG
 
     Args:
-        first_name: 名字
-        last_name: 姓氏
-        school_id: 学校 ID
+        first_name: الاسم الأول
+        last_name: اسم العائلة
+        school_id: معرّف المدرسة (ID)
 
     Returns:
-        bytes: PNG 图片数据
+        bytes: بيانات صورة PNG
     """
     try:
         from playwright.sync_api import sync_playwright
 
-        # 生成 HTML
+        # إنشاء محتوى HTML
         html_content = generate_html(first_name, last_name, school_id)
 
-        # 使用 Playwright 截图（替代 Selenium）
+        # استخدام Playwright لالتقاط الشاشة (بدلاً من Selenium)
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
             page = browser.new_page(viewport={'width': 1200, 'height': 900})
             page.set_content(html_content, wait_until='load')
-            page.wait_for_timeout(500)  # 等待样式加载
+            page.wait_for_timeout(500)  # انتظار تحميل الأنماط
             screenshot_bytes = page.screenshot(type='png', full_page=True)
             browser.close()
 
         return screenshot_bytes
 
     except ImportError:
-        raise Exception("需要安装 playwright: pip install playwright && playwright install chromium")
+        raise Exception("يجب تثبيت playwright عبر: pip install playwright && playwright install chromium")
     except Exception as e:
-        raise Exception(f"生成图片失败: {str(e)}")
+        raise Exception(f"فشل إنشاء الصورة: {str(e)}")
 
 
 if __name__ == '__main__':
-    # 测试代码
+    # كود الاختبار
     import sys
     import io
 
-    # 修复 Windows 控制台编码问题
+    # إصلاح مشكلة تشفير وحدة تحكم (Console) Windows
     if sys.platform == 'win32':
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-    print("测试 PSU 图片生成...")
+    print("اختبار إنشاء صورة PSU...")
 
     first_name = "John"
     last_name = "Smith"
 
-    print(f"姓名: {first_name} {last_name}")
+    print(f"الاسم: {first_name} {last_name}")
     print(f"PSU ID: {generate_psu_id()}")
-    print(f"邮箱: {generate_psu_email(first_name, last_name)}")
+    print(f"البريد الإلكتروني: {generate_psu_email(first_name, last_name)}")
 
     try:
         img_data = generate_image(first_name, last_name)
 
-        # 保存测试图片
+        # حفظ صورة الاختبار
         with open('test_psu_card.png', 'wb') as f:
             f.write(img_data)
 
-        print(f"✓ 图片生成成功! 大小: {len(img_data)} bytes")
-        print("✓ 已保存为 test_psu_card.png")
+        print(f"✓ تم إنشاء الصورة بنجاح! الحجم: {len(img_data)} بايت")
+        print("✓ تم الحفظ باسم test_psu_card.png")
 
     except Exception as e:
-        print(f"✗ 错误: {e}")
+        print(f"✗ خطأ: {e}")

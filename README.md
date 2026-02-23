@@ -7,7 +7,7 @@
 
 > 🤖 自动完成 SheerID 学生/教师认证的 Telegram 机器人
 > 
-> 基于 [@auto_sheerid_bot](https://t.me/auto_sheerid_bot) GGBond 的旧版代码改进
+> 基于旧版代码的大幅改进和重构版本，增加了许多新特性。
 
 中文 | [English](README_EN.md) | [العربية](README_AR.md)
 
@@ -81,7 +81,7 @@
 ### 1. 克隆项目
 
 ```bash
-git clone https://github.com/PastKing/tgbot-verify.git
+git clone https://github.com/yourusername/your-repo.git
 cd tgbot-verify
 ```
 
@@ -138,7 +138,7 @@ python bot.py
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/PastKing/tgbot-verify.git
+git clone https://github.com/yourusername/your-repo.git
 cd tgbot-verify
 
 # 2. 配置环境变量
@@ -285,8 +285,8 @@ tgbot-verify/
 | 变量名 | 必填 | 说明 | 默认值 |
 |--------|------|------|--------|
 | `BOT_TOKEN` | ✅ | Telegram Bot Token | - |
-| `CHANNEL_USERNAME` | ❌ | 频道用户名 | pk_oa |
-| `CHANNEL_URL` | ❌ | 频道链接 | https://t.me/pk_oa |
+| `CHANNEL_USERNAME` | ❌ | 频道用户名 | your_channel_username |
+| `CHANNEL_URL` | ❌ | 频道链接 | https://t.me/your_channel |
 | `ADMIN_USER_ID` | ✅ | 管理员 Telegram ID | - |
 | `MYSQL_HOST` | ✅ | MySQL 主机地址 | localhost |
 | `MYSQL_PORT` | ❌ | MySQL 端口 | 3306 |
@@ -335,8 +335,8 @@ REGISTER_REWARD = 1    # 注册奖励积分
 
 ## 🔗 相关链接
 
-- 📺 **Telegram 频道**：https://t.me/pk_oa
-- 🐛 **问题反馈**：[GitHub Issues](https://github.com/PastKing/tgbot-verify/issues)
+- 📺 **Telegram 频道**：https://t.me/your_channel
+- 🐛 **问题反馈**：[GitHub Issues](https://github.com/yourusername/your-repo/issues)
 - 📖 **部署文档**：[DEPLOY.md](DEPLOY.md)
 
 ---
@@ -378,7 +378,7 @@ in the Software without restriction...
 
 ## 🙏 致谢
 
-- 感谢 [@auto_sheerid_bot](https://t.me/auto_sheerid_bot) GGBond 提供的旧版代码基础
+- 感谢所有为这个项目做过贡献的开发者
 - 感谢所有为本项目做出贡献的开发者
 - 感谢 SheerID 平台提供的认证服务
 
@@ -420,5 +420,5 @@ in the Software without restriction...
 </p>
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/PastKing">PastKing</a>
+  Made with ❤️
 </p>

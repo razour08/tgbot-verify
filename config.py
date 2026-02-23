@@ -1,23 +1,23 @@
-"""全局配置文件"""
+"""ملف التكوين العام (Global Configuration)"""
 import os
 from dotenv import load_dotenv
 
-# 加载 .env 文件
+# تحميل ملف .env
 load_dotenv()
 
-# Telegram Bot 配置
+# تكوين روبوت تيليجرام (Telegram Bot)
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
-CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME", "pk_oa")
-CHANNEL_URL = os.getenv("CHANNEL_URL", "https://t.me/pk_oa")
+CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME", "your_channel_username")
+CHANNEL_URL = os.getenv("CHANNEL_URL", "https://t.me/your_channel")
 
-# 管理员配置
+# تكوين المسؤول (Admin)
 ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID", "123456789"))
 
-# 积分配置
-VERIFY_COST = 1  # 验证消耗的积分
-CHECKIN_REWARD = 1  # 签到奖励积分
-INVITE_REWARD = 2  # 邀请奖励积分
-REGISTER_REWARD = 1  # 注册奖励积分
+# تكوين النقاط (Points/Balance)
+VERIFY_COST = 1  # النقاط المستهلكة في التحقق
+CHECKIN_REWARD = 1  # مكافأة نقاط تسجيل الدخول اليومي (Check-in)
+INVITE_REWARD = 2  # مكافأة نقاط الدعوة
+REGISTER_REWARD = 1  # مكافأة نقاط التسجيل
 
-# 帮助链接
+# رابط المساعدة
 HELP_NOTION_URL = "https://rhetorical-era-3f3.notion.site/dd78531dbac745af9bbac156b51da9cc"

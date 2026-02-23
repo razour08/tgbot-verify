@@ -1,17 +1,17 @@
-"""PNG 教师证明生成模块 - Bolt.now / PSU"""
+"""وحدة إنشاء إثبات المعلمين بصيغة PNG - Bolt.now / PSU"""
 import random
 from datetime import datetime
 
 
 def generate_psu_id():
-    """生成随机 PSU ID (9位数字)"""
+    """إنشاء رقم تعريفي عشوائي (PSU ID) مكون من 9 أرقام"""
     return f"9{random.randint(10000000, 99999999)}"
 
 
 def generate_psu_email(first_name, last_name):
     """
-    生成 PSU 邮箱
-    格式: firstName.lastName + 3-4位数字 @psu.edu
+    إنشاء بريد إلكتروني لجامعة PSU
+    التنسيق: firstName.lastName + 3-4 أرقام @psu.edu
     """
     digit_count = random.choice([3, 4])
     digits = ''.join([str(random.randint(0, 9)) for _ in range(digit_count)])
@@ -24,7 +24,7 @@ _page_pool = []
 
 
 def _get_browser_context():
-    """获取或创建浏览器上下文（单例模式）"""
+    """الحصول على أو إنشاء سياق المتصفح (نمط Singleton)"""
     global _browser_context
     if _browser_context is None:
         try:
@@ -45,24 +45,24 @@ def _get_browser_context():
                 device_scale_factor=2,
             )
         except ImportError:
-            raise Exception("需要安装 playwright: pip install playwright && playwright install chromium")
+            raise Exception("يتطلب تثبيت playwright عبر: pip install playwright && playwright install chromium")
     return _browser_context
 
 
 def _html_to_png(html_content: str, width: int = 1200, height: int = None) -> bytes:
-    """将 HTML 转换为 PNG 截图（优化版：复用浏览器实例）"""
+    """تحويل محتوى HTML إلى لقطة شاشة PNG (نسخة محسنة: إعادة استخدام مثيل المتصفح)"""
     try:
         context = _get_browser_context()
         page = context.new_page()
 
         try:
-            # 直接设置 HTML 内容，使用 domcontentloaded 而非 networkidle（更快）
+            # تعيين محتوى HTML مباشرة، باستخدام domcontentloaded بدلاً من networkidle (لأنه أسرع)
             page.set_content(html_content, wait_until='domcontentloaded')
 
-            # 等待图片加载（如果有外部图片）
+            # انتظار تحميل الصور (إن وجدت صور خارجية)
             page.wait_for_load_state('load', timeout=3000)
 
-            # 自动计算高度
+            # حساب الارتفاع تلقائياً
             if height is None:
                 height = page.evaluate(
                     "Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)"
@@ -70,18 +70,18 @@ def _html_to_png(html_content: str, width: int = 1200, height: int = None) -> by
 
             page.set_viewport_size({'width': width, 'height': height})
 
-            # 截图
+            # التقاط الشاشة
             screenshot_bytes = page.screenshot(type='png', full_page=True)
             return screenshot_bytes
         finally:
             page.close()
 
     except Exception as e:
-        raise Exception(f"生成图片失败: {str(e)}")
+        raise Exception(f"فشل إنشاء الصورة: {str(e)}")
 
 
 def generate_teacher_card_html(first_name: str, last_name: str, psu_id: str) -> str:
-    """生成教师证件 HTML。"""
+    """إنشاء محتوى HTML لبطاقة المعلم."""
     timestamp = int(datetime.now().timestamp())
     name = f"{first_name} {last_name}"
     return f"""<!DOCTYPE html>
@@ -295,7 +295,7 @@ def generate_teacher_card_html(first_name: str, last_name: str, psu_id: str) -> 
 def generate_employment_letter_html(
     first_name: str, last_name: str, title: str, dept: str
 ) -> str:
-    """生成教师在职证明 HTML。"""
+    """إنشاء محتوى HTML لشهادة إثبات التوظيف للمعلم."""
     name = f"{first_name} {last_name}"
     now = datetime.now()
     date_str = now.strftime("%B %d, %Y")
@@ -513,19 +513,19 @@ def generate_employment_letter_html(
 
 def _html_to_png_batch(html_list: list[tuple[str, int, int]]) -> list[bytes]:
     """
-    批量并发生成多张 PNG（性能优化版）
+    إنشاء صور PNG متعددة بشكل متزامن (نسخة محسنة الأداء)
 
     Args:
         html_list: [(html_content, width, height), ...]
 
     Returns:
-        list[bytes]: PNG 数据列表
+        list[bytes]: قائمة ببيانات صور PNG
     """
     import asyncio
     from playwright.async_api import async_playwright
 
     async def render_single(html_content: str, width: int, height: int):
-        """异步渲染单张图片"""
+        """عرض صورة مفردة بشكل غير متزامن"""
         async with async_playwright() as p:
             browser = await p.chromium.launch(
                 headless=True,
@@ -559,7 +559,7 @@ def _html_to_png_batch(html_list: list[tuple[str, int, int]]) -> list[bytes]:
                 await browser.close()
 
     async def render_all():
-        """并发渲染所有图片"""
+        """عرض جميع الصور بشكل متزامن"""
         tasks = [render_single(html, w, h) for html, w, h in html_list]
         return await asyncio.gather(*tasks)
 
@@ -568,12 +568,12 @@ def _html_to_png_batch(html_list: list[tuple[str, int, int]]) -> list[bytes]:
 
 def generate_images(first_name: str, last_name: str, school_id: str = '2565'):
     """
-    生成两张 PNG：教师卡片 + 在职证明（并发优化版）
+    إنشاء صورتي PNG: بطاقة المعلم + شهادة إثبات العمل (نسخة محسنة باستخدام التزامن)
 
     Args:
-        first_name: 名
-        last_name: 姓
-        school_id: 学校 ID（保留接口一致）
+        first_name: الاسم الأول
+        last_name: اسم العائلة
+        school_id: معرّف المدرسة (للحفاظ على توافق الواجهة)
 
     Returns:
         list[dict]: [{"file_name": str, "data": bytes}]
@@ -599,7 +599,7 @@ def generate_images(first_name: str, last_name: str, school_id: str = '2565'):
     card_html = generate_teacher_card_html(first_name, last_name, psu_id)
     letter_html = generate_employment_letter_html(first_name, last_name, title, dept)
 
-    # 并发生成两张图片
+    # إنشاء الصورتين بشكل متزامن
     html_list = [
         (card_html, 700, 1100),
         (letter_html, 1300, 1600),
@@ -615,7 +615,7 @@ def generate_images(first_name: str, last_name: str, school_id: str = '2565'):
 
 
 if __name__ == '__main__':
-    # 简单测试
+    # اختبار بسيط
     assets = generate_images("John", "Smith")
     for asset in assets:
         with open(asset["file_name"], "wb") as f:

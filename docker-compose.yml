@@ -39,8 +39,8 @@ services:
       - PYTHONUNBUFFERED=1
       # Telegram Bot Config
       - BOT_TOKEN=${BOT_TOKEN}
-      - CHANNEL_USERNAME=${CHANNEL_USERNAME:-pk_oa}
-      - CHANNEL_URL=${CHANNEL_URL:-https://t.me/pk_oa}
+      - CHANNEL_USERNAME=${CHANNEL_USERNAME:-your_channel_username}
+      - CHANNEL_URL=${CHANNEL_URL:-https://t.me/your_channel}
       - ADMIN_USER_ID=${ADMIN_USER_ID}
       # MySQL Config - connects to mysql service
       - MYSQL_HOST=mysql

@@ -1,4 +1,4 @@
-"""SheerID 学生验证主程序"""
+"""البرنامج الرئيسي للتحقق من الطلاب عبر SheerID"""
 import re
 import random
 import logging
@@ -9,7 +9,7 @@ from . import config
 from .name_generator import NameGenerator, generate_email, generate_birth_date
 from .img_generator import generate_psu_email, generate_image
 
-# 配置日志
+# إعداد السجلات (Logging)
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] [%(levelname)s] %(message)s',
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class SheerIDVerifier:
-    """SheerID 学生身份验证器"""
+    """مُدقق هوية الطالب عبر SheerID"""
 
     def __init__(self, verification_id: str):
         self.verification_id = verification_id
@@ -37,7 +37,7 @@ class SheerIDVerifier:
 
     @staticmethod
     def normalize_url(url: str) -> str:
-        """规范化 URL（保留原样）"""
+        """توحيد الـ URL (يتم الإبقاء عليه كما هو)"""
         return url
 
     @staticmethod
@@ -50,7 +50,7 @@ class SheerIDVerifier:
     def _sheerid_request(
         self, method: str, url: str, body: Optional[Dict] = None
     ) -> Tuple[Dict, int]:
-        """发送 SheerID API 请求"""
+        """إرسال طلب إلى واجهة برمجة تطبيقات SheerID"""
         headers = {
             "Content-Type": "application/json",
         }
@@ -65,11 +65,11 @@ class SheerIDVerifier:
                 data = response.text
             return data, response.status_code
         except Exception as e:
-            logger.error(f"SheerID 请求失败: {e}")
+            logger.error(f"فشل طلب SheerID: {e}")
             raise
 
     def _upload_to_s3(self, upload_url: str, img_data: bytes) -> bool:
-        """上传 PNG 到 S3"""
+        """رفع صورة PNG إلى S3"""
         try:
             headers = {"Content-Type": "image/png"}
             response = self.http_client.put(
@@ -77,7 +77,7 @@ class SheerIDVerifier:
             )
             return 200 <= response.status_code < 300
         except Exception as e:
-            logger.error(f"S3 上传失败: {e}")
+            logger.error(f"فشل الرفع إلى S3: {e}")
             return False
 
     def verify(
@@ -88,7 +88,7 @@ class SheerIDVerifier:
         birth_date: str = None,
         school_id: str = None,
     ) -> Dict:
-        """执行验证流程，移除状态轮询以减少耗时"""
+        """تنفيذ عملية التحقق. تمت إزالة الاستعلام المستمر عن الحالة لتقليل الوقت المستغرق"""
         try:
             current_step = "initial"
 
@@ -105,20 +105,20 @@ class SheerIDVerifier:
             if not birth_date:
                 birth_date = generate_birth_date()
 
-            logger.info(f"学生信息: {first_name} {last_name}")
-            logger.info(f"邮箱: {email}")
-            logger.info(f"学校: {school['name']}")
-            logger.info(f"生日: {birth_date}")
-            logger.info(f"验证 ID: {self.verification_id}")
+            logger.info(f"معلومات الطالب: {first_name} {last_name}")
+            logger.info(f"البريد الإلكتروني: {email}")
+            logger.info(f"المدرسة: {school['name']}")
+            logger.info(f"تاريخ الميلاد: {birth_date}")
+            logger.info(f"معرّف التحقق: {self.verification_id}")
 
-            # 生成学生证 PNG
-            logger.info("步骤 1/4: 生成学生证 PNG...")
+            # توليد صورة بطاقة الطالب بصيغة PNG
+            logger.info("الخطوة 1/4: توليد صورة بطاقة الطالب...")
             img_data = generate_image(first_name, last_name, school_id)
             file_size = len(img_data)
-            logger.info(f"✅ PNG 大小: {file_size / 1024:.2f}KB")
+            logger.info(f"✅ حجم PNG: {file_size / 1024:.2f}KB")
 
-            # 提交学生信息
-            logger.info("步骤 2/4: 提交学生信息...")
+            # إرسال معلومات الطالب
+            logger.info("الخطوة 2/4: إرسال معلومات الطالب...")
             step2_body = {
                 "firstName": first_name,
                 "lastName": last_name,
@@ -148,26 +148,26 @@ class SheerIDVerifier:
             )
 
             if step2_status != 200:
-                raise Exception(f"步骤 2 失败 (状态码 {step2_status}): {step2_data}")
+                raise Exception(f"الخطوة 2 فشلت (رمز الحالة {step2_status}): {step2_data}")
             if step2_data.get("currentStep") == "error":
                 error_msg = ", ".join(step2_data.get("errorIds", ["Unknown error"]))
-                raise Exception(f"步骤 2 错误: {error_msg}")
+                raise Exception(f"الخطوة 2 خطأ: {error_msg}")
 
-            logger.info(f"✅ 步骤 2 完成: {step2_data.get('currentStep')}")
+            logger.info(f"✅ الخطوة 2 اكتملت: {step2_data.get('currentStep')}")
             current_step = step2_data.get("currentStep", current_step)
 
-            # 跳过 SSO（如需要）
+            # تخطي SSO (الدخول الموحد) إذا لزم الأمر
             if current_step in ["sso", "collectStudentPersonalInfo"]:
-                logger.info("步骤 3/4: 跳过 SSO 验证...")
+                logger.info("الخطوة 3/4: تخطي التحقق من SSO...")
                 step3_data, _ = self._sheerid_request(
                     "DELETE",
                     f"{config.SHEERID_BASE_URL}/rest/v2/verification/{self.verification_id}/step/sso",
                 )
-                logger.info(f"✅ 步骤 3 完成: {step3_data.get('currentStep')}")
+                logger.info(f"✅ الخطوة 3 اكتملت: {step3_data.get('currentStep')}")
                 current_step = step3_data.get("currentStep", current_step)
 
-            # 上传文档并完成提交
-            logger.info("步骤 4/4: 请求并上传文档...")
+            # رفع المستندات وإكمال الإرسال
+            logger.info("الخطوة 4/4: طلب ورفع المستندات...")
             step4_body = {
                 "files": [
                     {"fileName": "student_card.png", "mimeType": "image/png", "fileSize": file_size}
@@ -179,60 +179,60 @@ class SheerIDVerifier:
                 step4_body,
             )
             if not step4_data.get("documents"):
-                raise Exception("未能获取上传 URL")
+                raise Exception("تعذر الحصول على رابط الرفع (upload URL)")
 
             upload_url = step4_data["documents"][0]["uploadUrl"]
-            logger.info("✅ 获取上传 URL 成功")
+            logger.info("✅ تم الحصول على رابط الرفع بنجاح")
             if not self._upload_to_s3(upload_url, img_data):
-                raise Exception("S3 上传失败")
-            logger.info("✅ 学生证上传成功")
+                raise Exception("فشل الرفع إلى S3")
+            logger.info("✅ تم رفع بطاقة الطالب بنجاح")
 
             step6_data, _ = self._sheerid_request(
                 "POST",
                 f"{config.SHEERID_BASE_URL}/rest/v2/verification/{self.verification_id}/step/completeDocUpload",
             )
-            logger.info(f"✅ 文档提交完成: {step6_data.get('currentStep')}")
+            logger.info(f"✅ اكتمل إرسال المستندات: {step6_data.get('currentStep')}")
             final_status = step6_data
 
-            # 不做状态轮询，直接返回等待审核
+            # عدم إجراء استعلام مستمر (Status Polling)، إرجاع الحالة إلى 'في انتظار المراجعة' مباشرةً
             return {
                 "success": True,
                 "pending": True,
-                "message": "文档已提交，等待审核",
+                "message": "تم إرسال المستندات، بانتظار المراجعة",
                 "verification_id": self.verification_id,
                 "redirect_url": final_status.get("redirectUrl"),
                 "status": final_status,
             }
 
         except Exception as e:
-            logger.error(f"❌ 验证失败: {e}")
+            logger.error(f"❌ فشل التحقق: {e}")
             return {"success": False, "message": str(e), "verification_id": self.verification_id}
 
 
 def main():
-    """主函数 - 命令行界面"""
+    """الدالة الرئيسية - واجهة سطر الأوامر (Command Line)"""
     import sys
 
     print("=" * 60)
-    print("SheerID 学生身份验证工具 (Python版)")
+    print("أداة التحقق من هوية طالب SheerID (نسخة بايثون)")
     print("=" * 60)
     print()
 
     if len(sys.argv) > 1:
         url = sys.argv[1]
     else:
-        url = input("请输入 SheerID 验证 URL: ").strip()
+        url = input("يرجى إدخال رابط التحقق من SheerID: ").strip()
 
     if not url:
-        print("❌ 错误: 未提供 URL")
+        print("❌ خطأ: لم يتم تقديم رابط (URL)")
         sys.exit(1)
 
     verification_id = SheerIDVerifier.parse_verification_id(url)
     if not verification_id:
-        print("❌ 错误: 无效的验证 ID 格式")
+        print("❌ خطأ: صيغة معرّف التحقق غير صالحة")
         sys.exit(1)
 
-    print(f"✅ 解析到验证 ID: {verification_id}")
+    print(f"✅ تم استخراج معرّف التحقق: {verification_id}")
     print()
 
     verifier = SheerIDVerifier(verification_id)
@@ -240,12 +240,12 @@ def main():
 
     print()
     print("=" * 60)
-    print("验证结果:")
+    print("نتيجة التحقق:")
     print("=" * 60)
-    print(f"状态: {'✅ 成功' if result['success'] else '❌ 失败'}")
-    print(f"消息: {result['message']}")
+    print(f"الحالة: {'✅ نجاح' if result['success'] else '❌ فشل'}")
+    print(f"الرسالة: {result['message']}")
     if result.get("redirect_url"):
-        print(f"跳转 URL: {result['redirect_url']}")
+        print(f"رابط التوجيه: {result['redirect_url']}")
     print("=" * 60)
 
     return 0 if result["success"] else 1

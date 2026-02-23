@@ -1,4 +1,4 @@
-"""User command handlers / معالجات أوامر المستخدم"""
+"""معالجات أوامر المستخدم (User command handlers)"""
 import logging
 from datetime import datetime
 from typing import Optional
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /start command"""
+    """معالجة الأمر /start"""
     if await reject_group_command(update):
         return
 
@@ -28,7 +28,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
     username = user.username or ""
     full_name = user.full_name or ""
 
-    # Already registered
+    # مسجل مسبقاً
     if db.user_exists(user_id):
         await update.message.reply_text(
             f"👋 Welcome back, {full_name}!\n"
@@ -40,7 +40,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
         )
         return
 
-    # Invite handling
+    # معالجة الدعوة
     invited_by: Optional[int] = None
     if context.args:
         try:
@@ -50,7 +50,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
         except Exception:
             invited_by = None
 
-    # Create user
+    # إنشاء مستخدم
     if db.create_user(user_id, username, full_name, invited_by):
         welcome_msg = get_welcome_message(full_name, bool(invited_by))
         await update.message.reply_text(welcome_msg)
@@ -62,7 +62,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
 
 
 async def about_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /about command"""
+    """معالجة الأمر /about"""
     if await reject_group_command(update):
         return
 
@@ -70,7 +70,7 @@ async def about_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /help command"""
+    """معالجة الأمر /help"""
     if await reject_group_command(update):
         return
 
@@ -80,7 +80,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: D
 
 
 async def balance_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /balance command"""
+    """معالجة الأمر /balance"""
     if await reject_group_command(update):
         return
 
@@ -108,7 +108,7 @@ async def balance_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
 
 
 async def checkin_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /qd check-in command"""
+    """معالجة الأمر /qd لتسجيل الدخول اليومي"""
     user_id = update.effective_user.id
 
     if db.is_user_blocked(user_id):
@@ -125,7 +125,7 @@ async def checkin_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
         )
         return
 
-    # Check if already checked in today
+    # التحقق مما إذا كان قد سجل الدخول اليوم بالفعل
     if not db.can_checkin(user_id):
         await update.message.reply_text(
             "❌ Already checked in today. Come back tomorrow!\n"
@@ -133,7 +133,7 @@ async def checkin_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
         )
         return
 
-    # Perform check-in
+    # إجراء تسجيل الدخول
     if db.checkin(user_id):
         user = db.get_user(user_id)
         await update.message.reply_text(
@@ -149,7 +149,7 @@ async def checkin_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db
 
 
 async def invite_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /invite command"""
+    """معالجة الأمر /invite"""
     if await reject_group_command(update):
         return
 
@@ -180,7 +180,7 @@ async def invite_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db:
 
 
 async def use_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /use command - redeem code"""
+    """معالجة الأمر /use - استخدام الكود (Redeem code)"""
     if await reject_group_command(update):
         return
 
@@ -240,7 +240,7 @@ async def use_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Da
 
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /status command - view verification history"""
+    """معالجة الأمر /status - عرض سجل التحقق"""
     if await reject_group_command(update):
         return
 
@@ -271,7 +271,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db:
         )
         return
 
-    # Service name mapping
+    # تعيين أسماء الخدمات
     service_names = {
         "gemini_one_pro": "Gemini One Pro",
         "chatgpt_teacher_k12": "ChatGPT K12",
@@ -280,7 +280,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db:
         "bolt_teacher": "Bolt.new Teacher",
     }
 
-    # Status emoji mapping
+    # تعيين رموز الحالة (Emojis)
     status_icons = {
         "success": "✅",
         "failed": "❌",
@@ -289,7 +289,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db:
 
     msg = "📋 Verification History / سجل التحقق:\n\n"
 
-    for v in verifications[:10]:  # Show last 10
+    for v in verifications[:10]:  # إظهار آخر 10 سجلات
         service = service_names.get(v["verification_type"], v["verification_type"])
         icon = status_icons.get(v["status"], "❓")
         status_text = {
@@ -298,7 +298,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db:
             "pending": "Pending / معلق",
         }.get(v["status"], v["status"])
 
-        # Format date
+        # تنسيق التاريخ
         if isinstance(v["created_at"], datetime):
             date_str = v["created_at"].strftime("%Y-%m-%d %H:%M")
         else:

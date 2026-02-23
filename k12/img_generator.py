@@ -1,4 +1,4 @@
-"""教师证明文档生成（PDF + PNG）"""
+"""إنشاء مستند إثبات المعلم (PDF + PNG)"""
 import random
 from datetime import datetime
 from io import BytesIO
@@ -8,7 +8,7 @@ from xhtml2pdf import pisa
 
 
 def _render_template(first_name: str, last_name: str) -> str:
-    """读取模板，替换姓名/工号/日期，并展开 CSS 变量。"""
+    """قراءة القالب واستبدال الاسم/الرقم الوظيفي/التاريخ، وتطبيق متغيرات CSS."""
     full_name = f"{first_name} {last_name}"
     employee_id = random.randint(1000000, 9999999)
     current_date = datetime.now().strftime("%m/%d/%Y %I:%M %p")
@@ -16,7 +16,7 @@ def _render_template(first_name: str, last_name: str) -> str:
     template_path = Path(__file__).parent / "card-temp.html"
     html = template_path.read_text(encoding="utf-8")
 
-    # 展开 CSS 变量，兼容 xhtml2pdf
+    # تطبيق متغيرات CSS لتتوافق مع xhtml2pdf
     color_map = {
         "var(--primary-blue)": "#0056b3",
         "var(--border-gray)": "#dee2e6",
@@ -25,7 +25,7 @@ def _render_template(first_name: str, last_name: str) -> str:
     for placeholder, color in color_map.items():
         html = html.replace(placeholder, color)
 
-    # 替换示例姓名 / 员工号 / 日期（模板里出现两处姓名 + span）
+    # استبدال الاسم التجريبي / الرقم الوظيفي / التاريخ (يظهر الاسم + span في مكانين داخل القالب)
     html = html.replace("Sarah J. Connor", full_name)
     html = html.replace("E-9928104", f"E-{employee_id}")
     html = html.replace('id="currentDate"></span>', f'id="currentDate">{current_date}</span>')
@@ -34,13 +34,13 @@ def _render_template(first_name: str, last_name: str) -> str:
 
 
 def generate_teacher_pdf(first_name: str, last_name: str) -> bytes:
-    """生成教师证明 PDF 文档字节。"""
+    """إنشاء مستند إثبات المعلم بصيغة PDF كبايتات (bytes)."""
     html = _render_template(first_name, last_name)
 
     output = BytesIO()
     pisa_status = pisa.CreatePDF(html, dest=output, encoding="utf-8")
     if pisa_status.err:
-        raise Exception("PDF 生成失败")
+        raise Exception("فشل إنشاء ملف PDF")
 
     pdf_data = output.getvalue()
     output.close()
@@ -48,12 +48,12 @@ def generate_teacher_pdf(first_name: str, last_name: str) -> bytes:
 
 
 def generate_teacher_png(first_name: str, last_name: str) -> bytes:
-    """使用 Playwright 截图生成 PNG（需要 playwright + chromium 已安装）。"""
+    """استخدام Playwright لالتقاط الشاشة وإنشاء صورة PNG (يتطلب تثبيت playwright + chromium)."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError as exc:
         raise RuntimeError(
-            "需要安装 playwright，请执行 `pip install playwright` 然后 `playwright install chromium`"
+            "نسخة Playwright مطلوبة، يرجى تنفيذ `pip install playwright` ثم `playwright install chromium`"
         ) from exc
 
     html = _render_template(first_name, last_name)
@@ -62,7 +62,7 @@ def generate_teacher_png(first_name: str, last_name: str) -> bytes:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1200, "height": 1000})
         page.set_content(html, wait_until="load")
-        page.wait_for_timeout(500)  # 让样式稳定
+        page.wait_for_timeout(500)  # انتظار ثبات التنسيق والتصميم
         card = page.locator(".browser-mockup")
         png_bytes = card.screenshot(type="png")
         browser.close()
@@ -70,6 +70,6 @@ def generate_teacher_png(first_name: str, last_name: str) -> bytes:
     return png_bytes
 
 
-# 兼容旧调用：默认生成 PDF
+# التوافق مع الاستدعاء القديم: إنشاء PDF افتراضيًا
 def generate_teacher_image(first_name: str, last_name: str) -> bytes:
     return generate_teacher_pdf(first_name, last_name)

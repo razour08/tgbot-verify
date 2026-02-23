@@ -1,9 +1,9 @@
-"""Message Templates / قوالب الرسائل"""
+"""قوالب الرسائل (Message Templates)"""
 from config import CHANNEL_URL, VERIFY_COST, HELP_NOTION_URL
 
 
 def get_welcome_message(full_name: str, invited_by: bool = False) -> str:
-    """Get welcome message / رسالة الترحيب"""
+    """الحصول على رسالة الترحيب"""
     msg = (
         f"🎉 Welcome, {full_name}!\n"
         "You have been registered and received 1 point.\n"
@@ -32,7 +32,7 @@ def get_welcome_message(full_name: str, invited_by: bool = False) -> str:
 
 
 def get_about_message() -> str:
-    """Get about message / رسالة حول البوت"""
+    """الحصول على رسالة معلومات (about) حول البوت"""
     return (
         "🤖 SheerID Auto-Verification Bot\n"
         "بوت التحقق التلقائي من SheerID\n"
@@ -64,7 +64,7 @@ def get_about_message() -> str:
 
 
 def get_help_message(is_admin: bool = False) -> str:
-    """Get help message / رسالة المساعدة"""
+    """الحصول على رسالة المساعدة"""
     msg = (
         "📖 SheerID Bot - Help / المساعدة\n"
         "\n"
@@ -103,7 +103,7 @@ def get_help_message(is_admin: bool = False) -> str:
 
 
 def get_insufficient_balance_message(current_balance: int) -> str:
-    """Get insufficient balance message / رسالة رصيد غير كافي"""
+    """الحصول على رسالة رصيد غير كافي"""
     return (
         f"⚠️ Insufficient points! Need {VERIFY_COST}, have {current_balance}.\n"
         f"نقاط غير كافية! مطلوب {VERIFY_COST}، لديك {current_balance}.\n\n"
@@ -115,7 +115,7 @@ def get_insufficient_balance_message(current_balance: int) -> str:
 
 
 def get_verify_usage_message(command: str, service_name: str) -> str:
-    """Get verify usage message / رسالة استخدام التحقق"""
+    """الحصول على رسالة شرح استخدام أمر التحقق"""
     return (
         f"📖 Usage / الاستخدام: {command} <SheerID link>\n\n"
         "Example / مثال:\n"

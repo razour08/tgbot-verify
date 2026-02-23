@@ -1,4 +1,4 @@
-"""PNG student document generator - Penn State LionPATH (anti-fraud, multi-doc)"""
+"""مولد مستندات الطالب بصيغة PNG - نظام LionPATH لجامعة ولاية بنسلفانيا (مكافحة الاحتيال، مستندات متعددة)"""
 import random
 import string
 import numpy as np
@@ -8,20 +8,20 @@ from PIL import Image, ImageFilter, ImageEnhance
 
 
 def _postprocess_image(png_bytes: bytes) -> bytes:
-    """Post-process screenshot to look like a real photo/scan.
+    """معالجة لقطة الشاشة لتبدو وكأنها صورة/مسح ضوئي حقيقي.
 
-    Applies: slight rotation, Gaussian noise, subtle blur,
-    brightness/contrast variation, JPEG compression artifacts,
-    and random crop margins.
+    يطبق: دوران طفيف، ضوضاء غاوسي، ضبابية خفيفة،
+    تغيير السطوع/التباين، تشوهات ضغط JPEG،
+    وهوامش قص عشوائية.
     """
     img = Image.open(BytesIO(png_bytes)).convert('RGB')
 
-    # 1. Slight random rotation (simulates non-aligned photo)
+    # 1. دوران عشوائي طفيف (يحاكي صورة غير محاذية)
     angle = random.uniform(-1.2, 1.2)
     if abs(angle) > 0.3:
         img = img.rotate(angle, resample=Image.BICUBIC, expand=True, fillcolor=(255, 255, 255))
 
-    # 2. Random crop margins (simulates imperfect framing)
+    # 2. هوامش قص عشوائية (يحاكي تأطير غير مثالي)
     w, h = img.size
     crop_left = random.randint(0, 8)
     crop_top = random.randint(0, 8)
@@ -29,45 +29,45 @@ def _postprocess_image(png_bytes: bytes) -> bytes:
     crop_bottom = random.randint(0, 8)
     img = img.crop((crop_left, crop_top, w - crop_right, h - crop_bottom))
 
-    # 3. Add Gaussian noise (simulates camera sensor noise)
+    # 3. إضافة ضوضاء غاوسي (يحاكي ضوضاء مستشعر الكاميرا)
     arr = np.array(img, dtype=np.float32)
     noise_strength = random.uniform(1.5, 4.0)
     noise = np.random.normal(0, noise_strength, arr.shape)
     arr = np.clip(arr + noise, 0, 255).astype(np.uint8)
     img = Image.fromarray(arr)
 
-    # 4. Subtle Gaussian blur (simulates slight camera defocus)
+    # 4. ضبابية غاوسية خفيفة (يحاكي عدم تركيز الكاميرا الطفيف)
     blur_radius = random.uniform(0.2, 0.6)
     img = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
 
-    # 5. Random brightness & contrast variation
+    # 5. تغيير عشوائي للسطوع والتباين
     brightness_factor = random.uniform(0.95, 1.05)
     img = ImageEnhance.Brightness(img).enhance(brightness_factor)
 
     contrast_factor = random.uniform(0.95, 1.05)
     img = ImageEnhance.Contrast(img).enhance(contrast_factor)
 
-    # 6. JPEG compression artifacts then back to PNG
-    # (simulates image saved/shared through messaging apps)
+    # 6. تشوهات ضغط JPEG ثم العودة إلى PNG
+    # (يحاكي صورة محفوظة/مشاركة عبر تطبيقات المراسلة)
     jpeg_quality = random.randint(82, 92)
     jpeg_buf = BytesIO()
     img.save(jpeg_buf, format='JPEG', quality=jpeg_quality)
     jpeg_buf.seek(0)
     img = Image.open(jpeg_buf)
 
-    # 7. Final export as PNG
+    # 7. التصدير النهائي بصيغة PNG
     out_buf = BytesIO()
     img.save(out_buf, format='PNG')
     return out_buf.getvalue()
 
 
 def generate_psu_id():
-    """Generate random PSU ID (9 digits)"""
+    """توليد معرف PSU عشوائي (9 أرقام)"""
     return f"9{random.randint(10000000, 99999999)}"
 
 
 def generate_psu_email(first_name, last_name):
-    """Generate PSU email: firstName.lastName + 3-4 digits @psu.edu"""
+    """توليد بريد PSU: الاسم_الأول.الاسم_الأخير + 3-4 أرقام @psu.edu"""
     digit_count = random.choice([3, 4])
     digits = ''.join([str(random.randint(0, 9)) for _ in range(digit_count)])
     email = f"{first_name.lower()}.{last_name.lower()}{digits}@psu.edu"
@@ -75,13 +75,13 @@ def generate_psu_email(first_name, last_name):
 
 
 def _random_filename(prefix):
-    """Generate randomized filename like 'schedule_a8f2.png'"""
+    """توليد اسم ملف عشوائي مثل 'schedule_a8f2.png'"""
     suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
     return f"{prefix}_{suffix}.png"
 
 
 # ============================================================
-# Randomized course data
+# بيانات المقررات الدراسية العشوائية
 # ============================================================
 
 COURSES_POOL = [
@@ -219,7 +219,7 @@ ACADEMIC_STANDINGS = [
 
 
 def _get_current_semester():
-    """Return the current semester string based on today's date."""
+    """إرجاع سلسلة نصية للفصل الدراسي الحالي بناءً على تاريخ اليوم."""
     now = datetime.now()
     month = now.month
     year = now.year
@@ -233,7 +233,7 @@ def _get_current_semester():
 
 
 def _generate_random_schedule():
-    """Generate 4-5 random courses with unique times and rooms."""
+    """توليد 4-5 مقررات عشوائية بأوقات وغرف فريدة."""
     num_courses = random.choice([4, 5])
     courses = random.sample(COURSES_POOL, num_courses)
     times = random.sample(TIME_SLOTS, num_courses)
@@ -258,7 +258,7 @@ def _generate_random_schedule():
 
 
 def _random_retrieve_time():
-    """Generate a slightly randomized 'data retrieved' timestamp."""
+    """توليد طابع زمني (بيانات مسترجعة) عشوائي قليلاً."""
     now = datetime.now()
     offset = timedelta(minutes=random.randint(0, 45), seconds=random.randint(0, 59))
     t = now - offset
@@ -266,7 +266,7 @@ def _random_retrieve_time():
 
 
 def generate_schedule_html(first_name, last_name, school_id='2565'):
-    """Generate Penn State LionPATH schedule HTML with visual randomization."""
+    """توليد HTML لجدول LionPATH لجامعة ولاية بنسلفانيا مع توزيع مرئي عشوائي."""
     psu_id = generate_psu_id()
     name = f"{first_name} {last_name}"
     date = _random_retrieve_time()
@@ -276,21 +276,21 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
     standing = random.choice(ACADEMIC_STANDINGS)
     status_text, status_bg, status_color, status_border = random.choice(ENROLLMENT_STATUSES)
 
-    # Visual randomization
+    # توزيع مرئي عشوائي
     bg_gray = f"#{random.randint(227,232):02x}{random.randint(227,232):02x}{random.randint(227,232):02x}"
     content_bg = f"#{random.randint(252,255):02x}{random.randint(252,255):02x}{random.randint(252,255):02x}"
     body_font_size = random.choice(["12.5px", "13px", "13.5px"])
     show_instructor = random.choice([True, False])
     show_standing = random.choice([True, False])
 
-    # Nav items vary slightly
+    # عناصر التنقل تختلف قليلاً
     nav_extras = random.choice([
         '<div class="nav-item">Campus Life</div>',
         '<div class="nav-item">Services</div>',
         '<div class="nav-item">Campus Life</div><div class="nav-item">Resources</div>',
     ])
 
-    # Build course rows
+    # بناء صفوف المقررات
     course_rows = ""
     for c in schedule:
         instructor_col = f'<td>{c["instructor"]}</td>' if (show_instructor and c["instructor"]) else (f'<td>—</td>' if show_instructor else '')
@@ -310,7 +310,7 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
     instructor_th = '<th width="12%">Instructor</th>' if show_instructor else ''
     title_width = "30%" if show_instructor else "35%"
 
-    # Standing row
+    # صف الموقف الأكاديمي
     standing_html = ""
     if show_standing:
         standing_html = f"""
@@ -572,14 +572,14 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
 
 
 def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
-    """Generate official PSU enrollment verification letter HTML."""
+    """توليد HTML لرسالة التحقق من التسجيل الرسمية لـ PSU."""
     name = f"{first_name} {last_name}"
     now = datetime.now()
     date_str = now.strftime("%B %d, %Y")
     semester, _ = _get_current_semester()
     standing = random.choice(ACADEMIC_STANDINGS)
 
-    # Randomize enrollment details
+    # تفاصيل تسجيل عشوائية
     credits_earned = random.randint(24, 95)
     credits_attempted = credits_earned + random.randint(0, 6)
     gpa = round(random.uniform(2.8, 3.95), 2)
@@ -821,14 +821,14 @@ def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
     return html
 
 
-# Legacy single-image function (backward compatible)
+# دالة الصورة المفردة القديمة (متوافقة مع الإصدارات السابقة)
 def generate_html(first_name, last_name, school_id='2565'):
-    """Generate Penn State LionPATH HTML (legacy wrapper)."""
+    """توليد HTML لـ LionPATH لجامعة ولاية بنسلفانيا (غلاف قديم)."""
     return generate_schedule_html(first_name, last_name, school_id)
 
 
 def _html_to_png(html_content, width=1200, height=None):
-    """Convert HTML to PNG with randomized viewport and retina DPI."""
+    """تحويل HTML إلى PNG باستخدام منفذ عرض (viewport) عشوائي ودقة شاشة Retina."""
     try:
         from playwright.sync_api import sync_playwright
 
@@ -852,14 +852,14 @@ def _html_to_png(html_content, width=1200, height=None):
             page.set_content(html_content, wait_until='domcontentloaded')
             page.wait_for_load_state('load', timeout=5000)
 
-            # Auto-calculate height if not specified
+            # حساب الارتفاع تلقائياً إذا لم يتم تحديده
             if height is None:
                 actual_h = page.evaluate(
                     "Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)"
                 )
                 page.set_viewport_size({'width': width, 'height': actual_h})
 
-            # Random slight scroll offset to break pixel-perfect fingerprinting
+            # إزاحة تمرير عشوائية طفيفة لكسر البصمة المطابقة للبيكسل
             scroll_y = random.randint(0, 3)
             if scroll_y > 0:
                 page.evaluate(f"window.scrollTo(0, {scroll_y})")
@@ -868,7 +868,7 @@ def _html_to_png(html_content, width=1200, height=None):
             screenshot_bytes = page.screenshot(type='png', full_page=True)
             browser.close()
 
-        # Post-process to simulate real photo
+        # المعالجة البعدية لمحاكاة صورة حقيقية
         return _postprocess_image(screenshot_bytes)
 
     except ImportError:
@@ -878,17 +878,17 @@ def _html_to_png(html_content, width=1200, height=None):
 
 
 def generate_image(first_name, last_name, school_id='2565'):
-    """Generate single Penn State LionPATH screenshot PNG (legacy)."""
+    """توليد لقطة شاشة واحدة لـ LionPATH بصيغة PNG (قديمة)."""
     html_content = generate_schedule_html(first_name, last_name, school_id)
     width = random.randint(1180, 1280)
     return _html_to_png(html_content, width=width)
 
 
 def generate_images(first_name, last_name, school_id='2565'):
-    """Generate 2 documents: schedule screenshot + enrollment letter.
+    """توليد مستندين: لقطة شاشة للجدول + رسالة التسجيل.
 
     Returns:
-        list[dict]: [{"file_name": str, "data": bytes}, ...]
+        قائمة بالقواميس (list[dict]): [{"file_name": str, "data": bytes}, ...]
     """
     psu_id = generate_psu_id()
     major = random.choice(MAJORS)
@@ -896,7 +896,7 @@ def generate_images(first_name, last_name, school_id='2565'):
     schedule_html = generate_schedule_html(first_name, last_name, school_id)
     letter_html = generate_enrollment_letter_html(first_name, last_name, psu_id, major)
 
-    # Randomized viewport widths
+    # عرض منفذ عرض (viewport) عشوائي
     sched_width = random.randint(1180, 1280)
     letter_width = random.randint(1250, 1350)
 
@@ -916,20 +916,20 @@ if __name__ == '__main__':
     if sys.platform == 'win32':
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-    print("Testing PSU multi-document generation...")
+    print("يتم الآن اختبار توليد مستندات متعددة لـ PSU...")
 
     first_name = "John"
     last_name = "Smith"
 
-    print(f"Name: {first_name} {last_name}")
-    print(f"PSU ID: {generate_psu_id()}")
-    print(f"Email: {generate_psu_email(first_name, last_name)}")
+    print(f"الاسم: {first_name} {last_name}")
+    print(f"معرف PSU: {generate_psu_id()}")
+    print(f"البريد الإلكتروني: {generate_psu_email(first_name, last_name)}")
 
     try:
         assets = generate_images(first_name, last_name)
         for asset in assets:
             with open(asset["file_name"], 'wb') as f:
                 f.write(asset["data"])
-            print(f"OK! {asset['file_name']} ({len(asset['data'])} bytes)")
+            print(f"تم بنجاح! {asset['file_name']} ({len(asset['data'])} bytes)")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"خطأ: {e}")

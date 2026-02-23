@@ -1,4 +1,4 @@
-"""Admin command handlers / معالجات أوامر المسؤول"""
+"""معالجات أوامر المسؤول (Admin command handlers)"""
 import asyncio
 import logging
 from datetime import datetime
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 async def addbalance_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /addbalance command - admin add points"""
+    """معالجة الأمر /addbalance - إضافة نقاط بواسطة المسؤول"""
     if await reject_group_command(update):
         return
 
@@ -64,7 +64,7 @@ async def addbalance_command(update: Update, context: ContextTypes.DEFAULT_TYPE,
 
 
 async def block_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /block command - admin block user"""
+    """معالجة الأمر /block - حظر مستخدم بواسطة المسؤول"""
     if await reject_group_command(update):
         return
 
@@ -111,7 +111,7 @@ async def block_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
 
 
 async def white_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /white command - admin unblock user"""
+    """معالجة الأمر /white - إلغاء حظر مستخدم بواسطة المسؤول"""
     if await reject_group_command(update):
         return
 
@@ -158,7 +158,7 @@ async def white_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: 
 
 
 async def blacklist_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /blacklist command - view blacklist"""
+    """معالجة الأمر /blacklist - عرض القائمة السوداء"""
     if await reject_group_command(update):
         return
 
@@ -190,7 +190,7 @@ async def blacklist_command(update: Update, context: ContextTypes.DEFAULT_TYPE, 
 
 
 async def genkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /genkey command - admin create redemption code"""
+    """معالجة الأمر /genkey - إنشاء كود استرداد (Promo Code) بواسطة المسؤول"""
     if await reject_group_command(update):
         return
 
@@ -260,7 +260,7 @@ async def genkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db:
 
 
 async def listkeys_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /listkeys command - admin view codes"""
+    """معالجة الأمر /listkeys - عرض الأكواد بواسطة المسؤول"""
     if await reject_group_command(update):
         return
 
@@ -306,7 +306,7 @@ async def listkeys_command(update: Update, context: ContextTypes.DEFAULT_TYPE, d
 
 
 async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE, db: Database):
-    """Handle /broadcast command - admin broadcast"""
+    """معالجة الأمر /broadcast - إرسال رسالة جماعية بواسطة المسؤول"""
     if await reject_group_command(update):
         return
 

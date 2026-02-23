@@ -44,7 +44,7 @@
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/PastKing/tgbot-verify.git
+git clone https://github.com/yourusername/your-repo.git
 cd tgbot-verify
 
 # 2. 配置环境变量
@@ -76,8 +76,8 @@ docker-compose down
 ```env
 # Telegram Bot 配置
 BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
-CHANNEL_USERNAME=pk_oa
-CHANNEL_URL=https://t.me/pk_oa
+CHANNEL_USERNAME=your_channel_username
+CHANNEL_URL=https://t.me/your_channel
 ADMIN_USER_ID=123456789
 
 # MySQL 数据库配置
@@ -271,10 +271,10 @@ BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
 
 # 频道用户名（选填）
 # 不需要 @ 符号
-CHANNEL_USERNAME=pk_oa
+CHANNEL_USERNAME=your_channel_username
 
 # 频道链接（选填）
-CHANNEL_URL=https://t.me/pk_oa
+CHANNEL_URL=https://t.me/your_channel
 
 # 管理员 Telegram ID（必填）
 # 可以通过 @userinfobot 获取
@@ -546,8 +546,8 @@ sudo supervisorctl start tgbot-verify
 
 ## 📞 技术支持
 
-- 📺 Telegram 频道：https://t.me/pk_oa
-- 🐛 问题反馈：[GitHub Issues](https://github.com/PastKing/tgbot-verify/issues)
+- 📺 Telegram 频道：https://t.me/your_channel
+- 🐛 问题反馈：[GitHub Issues](https://github.com/yourusername/your-repo/issues)
 
 ---
 

@@ -1,16 +1,16 @@
-# SheerID 验证配置文件
+# ملف تكوين التحقق من SheerID
 import random
 
-# SheerID API 配置
+# تكوين واجهة برمجة تطبيقات SheerID
 PROGRAM_ID = '67c8c14f5f17a83b745e3f82'
 SHEERID_BASE_URL = 'https://services.sheerid.com'
 MY_SHEERID_URL = 'https://my.sheerid.com'
 
-# 文件大小限制
+# حد حجم الملف
 MAX_FILE_SIZE = 1 * 1024 * 1024  # 1MB
 
-# ============ 大学列表 (加权选择) ============
-# weight = 优先级 / 成功率预期 (越高越常选中)
+# ============ قائمة الجامعات (اختيار مرجح) ============
+# weight = الأولوية / معدل النجاح المتوقع (كلما كان أعلى كلما تم اختياره أكثر)
 SCHOOLS = {
     # ========== Pennsylvania State University (PSU) campuses ==========
     '2565': {
@@ -49,7 +49,7 @@ SCHOOLS = {
         'weight': 80,
     },
 
-    # ========== Top US Universities ==========
+    # ========== أفضل الجامعات الأمريكية ==========
     '3499': {
         'id': 3499, 'idExtended': '3499',
         'name': 'University of California, Los Angeles',
@@ -225,7 +225,7 @@ SCHOOLS = {
         'type': 'UNIVERSITY', 'domain': 'bu.edu',
         'weight': 86,
     },
-    # ========== Community Colleges (may have higher success) ==========
+    # ========== كليات المجتمع (قد يكون لها معدل نجاح أعلى) ==========
     '2874': {
         'id': 2874, 'idExtended': '2874',
         'name': 'Santa Monica College',
@@ -242,10 +242,10 @@ SCHOOLS = {
     },
 }
 
-# 默认学校
+# المدرسة الافتراضية
 DEFAULT_SCHOOL_ID = '2565'
 
-# UTM 参数（营销追踪参数）
+# معلمات UTM (معلمات تتبع التسويق)
 DEFAULT_UTM_PARAMS = {
     'utm_source': 'gemini',
     'utm_medium': 'paid_media',
@@ -254,7 +254,7 @@ DEFAULT_UTM_PARAMS = {
 
 
 def get_random_school_id():
-    """Weighted random selection — higher weight = more likely to be chosen."""
+    """اختيار عشوائي مرجح — وزن أعلى = احتمال أكبر للاختيار."""
     ids = list(SCHOOLS.keys())
     weights = [SCHOOLS[sid].get('weight', 50) for sid in ids]
     return random.choices(ids, weights=weights, k=1)[0]

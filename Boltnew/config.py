@@ -1,14 +1,14 @@
-# SheerID 验证配置文件
+# ملف إعدادات التحقق لـ SheerID
 
-# SheerID API 配置
+# إعدادات واجهة برمجة تطبيقات SheerID (API)
 PROGRAM_ID = '68cc6a2e64f55220de204448'
 SHEERID_BASE_URL = 'https://services.sheerid.com'
 MY_SHEERID_URL = 'https://my.sheerid.com'
 
-# 文件大小限制
+# الحد الأقصى لحجم الملف
 MAX_FILE_SIZE = 1 * 1024 * 1024  # 1MB
 
-# 学校配置 - Pennsylvania State University 多校区
+# إعدادات المدرسة - فروع جامعة بنسلفانيا الحكومية (Pennsylvania State University)
 SCHOOLS = {
     '2565': {
         'id': 2565,
@@ -132,11 +132,11 @@ SCHOOLS = {
     }
 }
 
-# 默认学校
+# المدرسة الافتراضية
 DEFAULT_SCHOOL_ID = '2565'
 
-# UTM 参数（营销追踪参数）
-# 如果 URL 中没有这些参数，会自动添加
+# معاملات UTM (تتبع التسويق)
+# إذا لم تكن هذه المعاملات ضمن الـ URL، سيتم إضافتها تلقائياً
 DEFAULT_UTM_PARAMS = {
     'utm_source': 'gemini',
     'utm_medium': 'paid_media',

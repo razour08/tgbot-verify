@@ -1,8 +1,8 @@
-"""Real American name generator for student verification"""
+"""مولد أسماء أمريكية حقيقية للتحقق من الطالب"""
 import random
 
 
-# Top 100 real American first names (mix of male/female)
+# أفضل 100 اسم أول أمريكي حقيقي (مزيج من الذكور/الإناث)
 FIRST_NAMES_MALE = [
     "James", "John", "Robert", "Michael", "William", "David", "Richard", "Joseph",
     "Thomas", "Christopher", "Charles", "Daniel", "Matthew", "Anthony", "Mark",
@@ -27,7 +27,7 @@ FIRST_NAMES_FEMALE = [
     "Evelyn", "Abigail", "Ella", "Scarlett", "Grace", "Lily", "Hannah", "Aria",
 ]
 
-# Real American last names (top 200 by frequency)
+# أسماء عائلة أمريكية حقيقية (أعلى 200 من حيث التكرار)
 LAST_NAMES = [
     "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis",
     "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson",
@@ -52,16 +52,16 @@ LAST_NAMES = [
 
 
 class NameGenerator:
-    """Real American name generator"""
+    """مولد أسماء أمريكية حقيقية"""
 
     @classmethod
     def generate(cls):
-        """Generate a realistic random American name.
+        """توليد اسم أمريكي عشوائي واقعي.
 
         Returns:
-            dict with first_name, last_name, full_name
+            قاموس (dict) يحتوي على الاسم الأول، واسم العائلة، والاسم الكامل
         """
-        # 50/50 male/female
+        # 50/50 ذكر/أنثى
         if random.random() < 0.5:
             first_name = random.choice(FIRST_NAMES_MALE)
         else:
@@ -69,7 +69,7 @@ class NameGenerator:
 
         last_name = random.choice(LAST_NAMES)
 
-        # 50% chance of middle initial
+        # فرصة 50% لوجود حرف أوسط
         if random.random() < 0.5:
             middle_initial = random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
             full_name = f"{first_name} {middle_initial}. {last_name}"
@@ -84,13 +84,13 @@ class NameGenerator:
 
 
 def generate_email(school_domain="PSU.EDU"):
-    """Generate a random school email.
+    """توليد بريد إلكتروني مدرسي عشوائي.
 
     Args:
-        school_domain: School domain
+        school_domain: نطاق المدرسة
 
     Returns:
-        str: Email address
+        سلسلة نصية (str): عنوان البريد الإلكتروني
     """
     chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     username = "".join(random.choice(chars) for _ in range(8))
@@ -98,10 +98,10 @@ def generate_email(school_domain="PSU.EDU"):
 
 
 def generate_birth_date():
-    """Generate a random birth date (1998-2005).
+    """توليد تاريخ ميلاد عشوائي (1998-2005).
 
     Returns:
-        str: YYYY-MM-DD format
+        سلسلة نصية (str): بتنسيق YYYY-MM-DD
     """
     year = random.randint(1998, 2005)
     month = str(random.randint(1, 12)).zfill(2)

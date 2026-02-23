@@ -8,54 +8,67 @@ from PIL import Image, ImageFilter, ImageEnhance
 
 
 def _postprocess_image(png_bytes: bytes) -> bytes:
-    """معالجة لقطة الشاشة لتبدو وكأنها صورة/مسح ضوئي حقيقي.
-
-    يطبق: دوران طفيف، ضوضاء غاوسي، ضبابية خفيفة،
-    تغيير السطوع/التباين، تشوهات ضغط JPEG،
-    وهوامش قص عشوائية.
+    """معالجة لقطة الشاشة لتبدو وكأنها صورة/مسح ضوئي حقيقي جدًا للتغلب على كشف التزوير الذكي.
     """
     img = Image.open(BytesIO(png_bytes)).convert('RGB')
-
-    # 1. دوران عشوائي طفيف (يحاكي صورة غير محاذية)
-    angle = random.uniform(-1.2, 1.2)
-    if abs(angle) > 0.3:
-        img = img.rotate(angle, resample=Image.BICUBIC, expand=True, fillcolor=(255, 255, 255))
-
-    # 2. هوامش قص عشوائية (يحاكي تأطير غير مثالي)
     w, h = img.size
-    crop_left = random.randint(0, 8)
-    crop_top = random.randint(0, 8)
-    crop_right = random.randint(0, 8)
-    crop_bottom = random.randint(0, 8)
-    img = img.crop((crop_left, crop_top, w - crop_right, h - crop_bottom))
 
-    # 3. إضافة ضوضاء غاوسي (يحاكي ضوضاء مستشعر الكاميرا)
+    # 1. دوران عشوائي أقوى قليلاً (يحاكي صورة ممسوحة ضوئياً بشكل سيء)
+    angle = random.uniform(-2.5, 2.5)
+    img = img.rotate(angle, resample=Image.BICUBIC, expand=True, fillcolor=(255, 255, 255))
+    
+    # 2. هوامش قص عشوائية أقوى
+    crop_left = random.randint(5, 25)
+    crop_top = random.randint(5, 25)
+    crop_right = random.randint(5, 25)
+    crop_bottom = random.randint(5, 25)
+    img = img.crop((crop_left, crop_top, img.width - crop_right, img.height - crop_bottom))
+
+    # 3. محاكاة تباين وإضاءة الماسح الضوئي (Scanner Artifacts)
+    brightness = random.uniform(0.9, 1.1)
+    contrast = random.uniform(0.85, 1.15)
+    img = ImageEnhance.Brightness(img).enhance(brightness)
+    img = ImageEnhance.Contrast(img).enhance(contrast)
+
+    # 4. إضافة ضوضاء قوية وملونة (يحاكي كاميرا هاتف رديئة أو ضجيج Jpeg)
     arr = np.array(img, dtype=np.float32)
-    noise_strength = random.uniform(1.5, 4.0)
+    noise_strength = random.uniform(3.0, 8.0)
     noise = np.random.normal(0, noise_strength, arr.shape)
     arr = np.clip(arr + noise, 0, 255).astype(np.uint8)
     img = Image.fromarray(arr)
 
-    # 4. ضبابية غاوسية خفيفة (يحاكي عدم تركيز الكاميرا الطفيف)
-    blur_radius = random.uniform(0.2, 0.6)
+    # 5. ضبابية غاوسية متغيرة (محاكاة عدم ثبات اليد)
+    blur_radius = random.uniform(0.5, 1.2)
     img = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
+    
+    # 6. إضافة "تظليل دقيق" لمحاكاة ورقة مطوية أو إضاءة غير متساوية (Vignette-like)
+    import math
+    if random.choice([True, False]):
+        arr = np.array(img, dtype=np.float32)
+        center_x, center_y = w / 2, h / 2
+        for y in range(min(h, arr.shape[0])):
+            for x in range(min(w, arr.shape[1])):
+                dist = math.sqrt((x - center_x)**2 + (y - center_y)**2)
+                # تغميق الزوايا قليلاً جداً
+                fade = max(0.90, 1.0 - (dist / (max(w, h)) * 0.15))
+                arr[y, x] = arr[y, x] * fade
+        arr = np.clip(arr, 0, 255).astype(np.uint8)
+        img = Image.fromarray(arr)
 
-    # 5. تغيير عشوائي للسطوع والتباين
-    brightness_factor = random.uniform(0.95, 1.05)
-    img = ImageEnhance.Brightness(img).enhance(brightness_factor)
+    # 7. تشوهات ضغط JPEG قوية (Compression Artifacts) مرتين
+    jpeg_quality1 = random.randint(60, 75)
+    jpeg_buf1 = BytesIO()
+    img.save(jpeg_buf1, format='JPEG', quality=jpeg_quality1)
+    jpeg_buf1.seek(0)
+    img = Image.open(jpeg_buf1)
+    
+    jpeg_quality2 = random.randint(75, 85)
+    jpeg_buf2 = BytesIO()
+    img.save(jpeg_buf2, format='JPEG', quality=jpeg_quality2)
+    jpeg_buf2.seek(0)
+    img = Image.open(jpeg_buf2)
 
-    contrast_factor = random.uniform(0.95, 1.05)
-    img = ImageEnhance.Contrast(img).enhance(contrast_factor)
-
-    # 6. تشوهات ضغط JPEG ثم العودة إلى PNG
-    # (يحاكي صورة محفوظة/مشاركة عبر تطبيقات المراسلة)
-    jpeg_quality = random.randint(82, 92)
-    jpeg_buf = BytesIO()
-    img.save(jpeg_buf, format='JPEG', quality=jpeg_quality)
-    jpeg_buf.seek(0)
-    img = Image.open(jpeg_buf)
-
-    # 7. التصدير النهائي بصيغة PNG
+    # التصدير النهائي بصيغة PNG
     out_buf = BytesIO()
     img.save(out_buf, format='PNG')
     return out_buf.getvalue()
@@ -66,12 +79,19 @@ def generate_psu_id():
     return f"9{random.randint(10000000, 99999999)}"
 
 
-def generate_psu_email(first_name, last_name):
-    """توليد بريد PSU: الاسم_الأول.الاسم_الأخير + 3-4 أرقام @psu.edu"""
-    digit_count = random.choice([3, 4])
+def generate_school_email(first_name, last_name, school_domain):
+    """توليد بريد إلكتروني جامعي عشوائي بناءً على النطاق."""
+    digit_count = random.choice([2, 3, 4])
     digits = ''.join([str(random.randint(0, 9)) for _ in range(digit_count)])
-    email = f"{first_name.lower()}.{last_name.lower()}{digits}@psu.edu"
-    return email
+    
+    # تنسيقات مختلفة للبريد
+    formats = [
+        f"{first_name.lower()}.{last_name.lower()}{digits}@{school_domain}",
+        f"{first_name.lower()[0]}{last_name.lower()}{digits}@{school_domain}",
+        f"{last_name.lower()}{first_name.lower()[0]}{digits}@{school_domain}",
+        f"{first_name.lower()}{digits}@{school_domain}"
+    ]
+    return random.choice(formats)
 
 
 def _random_filename(prefix):
@@ -266,8 +286,23 @@ def _random_retrieve_time():
 
 
 def generate_schedule_html(first_name, last_name, school_id='2565'):
-    """توليد HTML لجدول LionPATH لجامعة ولاية بنسلفانيا مع توزيع مرئي عشوائي."""
-    psu_id = generate_psu_id()
+    """توليد HTML لجدول دراسي مع توزيع مرئي عشوائي واسم الجامعة الصحيح."""
+    
+    # جلب تفاصيل الجامعة من الإعدادات أو استخدام قيم افتراضية
+    from . import config
+    school_info = config.SCHOOLS.get(school_id, config.SCHOOLS[config.DEFAULT_SCHOOL_ID])
+    school_name = school_info['name']
+    school_domain = school_info.get('domain', 'edu')
+    
+    # اسم مختصر للجامعة للشعار (مثلاً MIT أو أول كلمة)
+    short_name = "".join([word[0] for word in school_name.split() if word[0].isupper()])
+    if len(short_name) < 2:
+        short_name = school_name.split()[0]
+        
+    # رابط شعار الجامعة الحقيقي (عبر خدمة Clearbit)
+    logo_url = f"https://logo.clearbit.com/{school_domain}?size=100"
+    
+    student_id = generate_psu_id()
     name = f"{first_name} {last_name}"
     date = _random_retrieve_time()
     major = random.choice(MAJORS)
@@ -282,6 +317,10 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
     body_font_size = random.choice(["12.5px", "13px", "13.5px"])
     show_instructor = random.choice([True, False])
     show_standing = random.choice([True, False])
+    
+    # اسم نظام الطلاب العشوائي
+    system_names = ["Student Center", "Portal", "MyCampus", "Connect", "Online Services", "Access"]
+    system_name = random.choice(system_names)
 
     # عناصر التنقل تختلف قليلاً
     nav_extras = random.choice([
@@ -319,25 +358,38 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
                 <div class="info-val">{standing}</div>
             </div>"""
 
+    # عشوائية تنسيقات الخطوط والألوان في الجدول
+    font_families = [
+        '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+        '"Helvetica Neue", Helvetica, Arial, sans-serif',
+        'Arial, Helvetica, sans-serif',
+        '"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif'
+    ]
+    font_family = random.choice(font_families)
+    
+    # تحريك العناصر عشوائياً بمقدار بيكسلات بسيطة
+    margin_top_header = random.randint(15, 30)
+    padding_content = random.randint(20, 45)
+    psu_blue = random.choice(["#1E407C", "#1a3668", "#152c55", "#0f2347"])
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LionPATH - Student Home</title>
+    <title>{school_name} - {system_name}</title>
     <style>
         :root {{
-            --psu-blue: #1E407C;
-            --psu-light-blue: #96BEE6;
+            --primary-color: {psu_blue};
             --bg-gray: {bg_gray};
             --text-color: #333;
         }}
 
         body {{
-            font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-family: {font_family};
             background-color: {bg_gray};
             margin: 0;
-            padding: {random.randint(18,24)}px;
+            padding: {random.randint(10,35)}px;
             color: var(--text-color);
             display: flex;
             justify-content: center;
@@ -345,19 +397,19 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
 
         .viewport {{
             width: 100%;
-            max-width: {random.randint(1080, 1120)}px;
+            max-width: {random.randint(1050, 1150)}px;
             background-color: #fff;
-            box-shadow: 0 {random.randint(4,6)}px {random.randint(18,22)}px rgba(0,0,0,{random.uniform(0.12, 0.18):.2f});
+            box-shadow: 0 {random.randint(2,8)}px {random.randint(10,30)}px rgba(0,0,0,{random.uniform(0.1, 0.2):.2f});
             min-height: 800px;
             display: flex;
             flex-direction: column;
         }}
 
         .header {{
-            background-color: var(--psu-blue);
+            background-color: var(--primary-color);
             color: white;
-            padding: 0 20px;
-            height: {random.randint(56,64)}px;
+            padding: 0 {random.randint(15, 25)}px;
+            height: {random.randint(55,70)}px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -366,44 +418,44 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
         .brand {{
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: {random.randint(10, 20)}px;
         }}
 
-        .psu-logo {{
-            font-family: "Georgia", serif;
-            font-size: {random.randint(19,21)}px;
-            font-weight: bold;
-            letter-spacing: 1px;
+        .school-logo-img {{
+            height: {random.randint(28, 35)}px;
+            width: auto;
             border-right: 1px solid rgba(255,255,255,0.3);
-            padding-right: 15px;
+            padding-right: {random.randint(10, 20)}px;
+            background-color: transparent;
+            object-fit: contain;
         }}
 
         .system-name {{
-            font-size: {random.randint(17,19)}px;
-            font-weight: 300;
+            font-size: {random.randint(16,20)}px;
+            font-weight: {random.choice(["300", "400", "normal"])};
         }}
 
         .user-menu {{
-            font-size: 14px;
+            font-size: {random.choice(["13px","14px","15px"])};
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: {random.randint(15, 25)}px;
         }}
 
         .nav-bar {{
-            background-color: #f8f8f8;
+            background-color: {random.choice(["#f8f8f8", "#f4f4f4", "#fefefe", "#fafafa"])};
             border-bottom: 1px solid #ddd;
-            padding: 10px 20px;
+            padding: {random.randint(8,15)}px 20px;
             font-size: {body_font_size};
-            color: #666;
+            color: #555;
             display: flex;
-            gap: 20px;
+            gap: {random.randint(15, 30)}px;
         }}
         .nav-item {{ cursor: pointer; }}
-        .nav-item.active {{ color: var(--psu-blue); font-weight: bold; border-bottom: 2px solid var(--psu-blue); padding-bottom: 8px; }}
+        .nav-item.active {{ color: var(--primary-color); font-weight: bold; border-bottom: {random.choice(["2px","3px"])} solid var(--primary-color); padding-bottom: {random.randint(5,10)}px; }}
 
         .content {{
-            padding: {random.randint(25,35)}px;
+            padding: {padding_content}px;
             flex: 1;
         }}
 
@@ -411,69 +463,75 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            margin-bottom: 20px;
+            margin-bottom: {margin_top_header}px;
             border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
+            padding-bottom: {random.randint(8,15)}px;
         }}
 
         .page-title {{
-            font-size: {random.randint(22,26)}px;
-            color: var(--psu-blue);
+            font-size: {random.randint(20,28)}px;
+            color: var(--primary-color);
             margin: 0;
+            font-weight: {random.choice(["bold", "600", "500"])};
         }}
 
         .term-selector {{
             background: #fff;
             border: 1px solid #ccc;
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: {random.randint(4,8)}px {random.randint(8,15)}px;
+            border-radius: {random.randint(0,4)}px;
             font-size: 14px;
             color: #333;
-            font-weight: bold;
         }}
 
         .student-card {{
             background: {content_bg};
             border: 1px solid #e0e0e0;
-            padding: 15px;
-            margin-bottom: 25px;
+            padding: {random.randint(12, 18)}px;
+            margin-bottom: {random.randint(20, 30)}px;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat({random.choice([3, 4, 4])}, 1fr);
+            gap: {random.randint(15, 25)}px;
             font-size: {body_font_size};
+            border-radius: {random.randint(0,6)}px;
         }}
-        .info-label {{ color: #777; font-size: 11px; text-transform: uppercase; margin-bottom: 4px; }}
-        .info-val {{ font-weight: bold; color: #333; font-size: 14px; }}
+        .info-label {{ color: {random.choice(["#666","#777","#888"])}; font-size: 11px; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;}}
+        .info-val {{ font-weight: {random.choice(["bold", "600"])}; color: #222; font-size: {random.choice(["13px","14px","15px"])}; }}
         .status-badge {{
             background-color: {status_bg}; color: {status_color};
-            padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid {status_border};
+            padding: 3px {random.randint(6,10)}px; border-radius: {random.randint(3,10)}px; font-weight: bold; border: 1px solid {status_border};
+            display: inline-block;
         }}
 
         .schedule-table {{
             width: 100%;
             border-collapse: collapse;
             font-size: {body_font_size};
+            margin-top: {random.randint(10,25)}px;
         }}
 
         .schedule-table th {{
             text-align: left;
-            padding: 12px;
-            background-color: #f0f0f0;
-            border-bottom: 2px solid #ccc;
-            color: #555;
+            padding: {random.randint(10,15)}px;
+            background-color: {random.choice(["#f0f0f0", "#ececec", "#f5f5f5", "#eeeeee"])};
+            border-bottom: 2px solid {random.choice(["#ccc", "#bbb", "#ddd"])};
+            color: #444;
+            font-weight: {random.choice(["bold", "600"])};
         }}
 
         .schedule-table td {{
-            padding: {random.randint(13,17)}px 12px;
+            padding: {random.randint(12,18)}px 12px;
             border-bottom: 1px solid #eee;
+            color: #333;
         }}
 
-        .course-code {{ font-weight: bold; color: var(--psu-blue); }}
-        .course-title {{ font-weight: 500; }}
+        .course-code {{ font-weight: bold; color: var(--primary-color); }}
+        .course-title {{ font-weight: {random.choice(["500", "normal"])}; }}
 
         .total-row {{
             font-weight: bold;
-            background-color: #f8f8f8;
+            background-color: {random.choice(["#f8f8f8", "#fcfcfc", "#fdfdfd"])};
+            color: #222;
         }}
 
         @media print {{
@@ -489,8 +547,9 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
 <div class="viewport">
     <div class="header">
         <div class="brand">
-            <div class="psu-logo">PennState</div>
-            <div class="system-name">LionPATH</div>
+            <img src="{logo_url}" alt="" class="school-logo-img" onerror="this.onerror=null; this.style.display='none'; document.getElementById('fb-logo1').style.display='block';">
+            <div id="fb-logo1" style="display:none;font-family:'Georgia',serif;font-size:22px;font-weight:bold;line-height:30px;border-right:1px solid rgba(255,255,255,0.3);padding-right:15px;letter-spacing:1px;">{short_name}</div>
+            <div class="system-name">{system_name}</div>
         </div>
         <div class="user-menu">
             <span>Welcome, <strong>{name}</strong></span>
@@ -521,8 +580,8 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
                 <div class="info-val">{name}</div>
             </div>
             <div>
-                <div class="info-label">PSU ID</div>
-                <div class="info-val">{psu_id}</div>
+                <div class="info-label">Student ID</div>
+                <div class="info-val">{student_id}</div>
             </div>
             <div>
                 <div class="info-label">Academic Program</div>
@@ -559,8 +618,8 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
         </table>
 
         <div style="margin-top: {random.randint(40,60)}px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 11px; color: #888; text-align: center;">
-            &copy; {current_year} The Pennsylvania State University. All rights reserved.<br>
-            LionPATH is the student information system for Penn State.
+            &copy; {current_year} {school_name}. All rights reserved.<br>
+            {system_name} is the student information system for {short_name}.
         </div>
     </div>
 </div>
@@ -571,8 +630,20 @@ def generate_schedule_html(first_name, last_name, school_id='2565'):
     return html
 
 
-def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
-    """توليد HTML لرسالة التحقق من التسجيل الرسمية لـ PSU."""
+def generate_enrollment_letter_html(first_name, last_name, school_id='2565'):
+    """توليد HTML لرسالة التحقق من التسجيل الرسمية للجامعة المختارة."""
+    from . import config
+    school_info = config.SCHOOLS.get(school_id, config.SCHOOLS[config.DEFAULT_SCHOOL_ID])
+    school_name = school_info['name']
+    school_domain = school_info.get('domain', 'edu')
+    
+    # استخراج شعار الجامعة الحقيقي
+    logo_url = f"https://logo.clearbit.com/{school_domain}?size=150"
+    
+    # استخراج حرف من اسم الجامعة للشعار البديل
+    school_initial = school_name[0]
+    
+    student_id = generate_psu_id()
     name = f"{first_name} {last_name}"
     now = datetime.now()
     date_str = now.strftime("%B %d, %Y")
@@ -580,6 +651,7 @@ def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
     standing = random.choice(ACADEMIC_STANDINGS)
 
     # تفاصيل تسجيل عشوائية
+    major = random.choice(MAJORS)
     credits_earned = random.randint(24, 95)
     credits_attempted = credits_earned + random.randint(0, 6)
     gpa = round(random.uniform(2.8, 3.95), 2)
@@ -589,18 +661,28 @@ def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
     enroll_month = random.choice(["August", "January"])
     report_id = f"LPR-{random.randint(10000, 99999)}-{random.randint(100, 999)}"
 
+    # عشوائية في الحروف وتنسيق المستند الثاني لإبطال بصمة القوالب
+    font_family_letter = random.choice([
+        '"Times New Roman", Times, serif',
+        '"Helvetica Neue", Helvetica, Arial, sans-serif',
+        'Cambria, Cochin, Georgia, Times, "Times New Roman", serif',
+        'Arial, Helvetica, sans-serif'
+    ])
+    
+    psu_logo_color = random.choice(["#1E407C", "#152c55", "#0f2347", "#17366b"])
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSU Enrollment Verification</title>
+    <title>{short_name if 'short_name' in locals() else school_name} - Official Enrollment Verification</title>
     <style>
         body {{
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: {font_family_letter};
+            background-color: {random.choice(["#f4f4f4", "#f0f0f0", "#e8e8e8", "#f9f9f9"])};
             margin: 0;
-            padding: 20px;
+            padding: {random.randint(15, 30)}px;
             display: flex;
             justify-content: center;
         }}
@@ -609,105 +691,99 @@ def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
             width: 8.5in;
             min-height: 11in;
             background: white;
-            padding: 1in;
+            padding: {random.uniform(0.8, 1.2):.2f}in;
             box-sizing: border-box;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            color: #333;
+            box-shadow: 0 {random.randint(3,6)}px {random.randint(10,20)}px rgba(0,0,0,{random.uniform(0.1, 0.2):.2f});
+            color: {random.choice(["#222", "#333", "#111"])};
             position: relative;
         }}
 
         .header {{
-            margin-bottom: 40px;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 20px;
+            margin-bottom: {random.randint(30, 50)}px;
+            border-bottom: {random.choice(["1px", "2px"])} solid {random.choice(["#ccc", "#bbb", "var(--psu-blue)"])};
+            padding-bottom: {random.randint(15, 25)}px;
         }}
 
         .logo-area {{
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: {random.randint(10, 20)}px;
         }}
 
-        .psu-logo-mark {{
-            width: 50px;
-            height: 50px;
-            background-color: #1E407C;
-            mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45"/></svg>');
-            -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45"/></svg>');
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 28px;
-            font-family: serif;
-            margin-right: 15px;
+        .school-logo-img {{
+            width: {random.randint(55, 65)}px;
+            height: auto;
+            max-height: {random.randint(55, 65)}px;
+            margin-right: {random.randint(15, 25)}px;
+            object-fit: contain;
         }}
 
         .org-name {{
-            font-size: 18px;
+            font-size: {random.randint(17, 20)}px;
             font-weight: bold;
-            color: #1E407C;
+            color: {psu_logo_color};
             text-transform: uppercase;
+            letter-spacing: {random.uniform(0, 1):.1f}px;
         }}
 
         .reg-address {{
-            font-size: 11px;
-            color: #666;
-            line-height: 1.4;
+            font-size: {random.choice(["10.5pt", "11pt", "10pt"])};
+            color: #555;
+            line-height: {random.uniform(1.3, 1.6):.1f};
             text-align: right;
             position: absolute;
-            top: 1in;
-            right: 1in;
+            top: {random.uniform(0.9, 1.1):.2f}in;
+            right: {random.uniform(0.9, 1.1):.2f}in;
         }}
 
         .content {{
-            font-size: 11pt;
-            line-height: 1.6;
+            font-size: {random.choice(["11pt", "11.5pt", "12pt"])};
+            line-height: {random.uniform(1.5, 1.8):.2f};
         }}
 
         .title {{
-            font-size: 16px;
+            font-size: {random.randint(16, 20)}px;
             font-weight: bold;
             text-align: center;
-            margin: 30px 0;
+            margin: {random.randint(25, 40)}px 0;
             text-transform: uppercase;
             text-decoration: underline;
+            letter-spacing: {random.uniform(0, 1.5):.1f}px;
         }}
 
         .data-table {{
             width: 100%;
             border-collapse: collapse;
-            margin: 30px 0;
-            font-size: 11pt;
+            margin: {random.randint(25, 35)}px 0;
+            font-size: {random.choice(["11pt", "11.5pt"])};
         }}
 
         .data-table td {{
-            padding: 8px 5px;
-            border-bottom: 1px solid #eee;
+            padding: {random.randint(7, 10)}px 5px;
+            border-bottom: 1px solid {random.choice(["#eee", "#ddd", "#f5f5f5"])};
         }}
 
         .data-label {{
-            font-weight: bold;
-            width: 40%;
-            color: #555;
+            font-weight: {random.choice(["bold", "600"])};
+            width: {random.choice(["40%", "45%", "35%"])};
+            color: #444;
         }}
 
         .data-value {{
-            font-weight: 600;
-            color: #000;
+            font-weight: {random.choice(["600", "500", "normal"])};
+            color: #111;
         }}
 
         .footer {{
             position: absolute;
-            bottom: 0.75in;
+            bottom: {random.uniform(0.7, 1.0):.2f}in;
             left: 1in;
             right: 1in;
-            font-size: 9px;
-            color: #888;
+            font-size: {random.choice(["8pt", "9pt", "10pt"])};
+            color: {random.choice(["#777", "#888", "#999"])};
             text-align: center;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            padding-top: {random.randint(8, 15)}px;
         }}
 
         @media print {{
@@ -721,14 +797,15 @@ def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
 <div class="page">
     <div class="header">
         <div class="logo-area">
-            <div class="psu-logo-mark">P</div>
-            <div class="org-name">The Pennsylvania State University</div>
+            <img src="{logo_url}" alt="" class="school-logo-img" onerror="this.onerror=null; this.style.display='none'; document.getElementById('fb-logo2').style.display='flex';">
+            <div id="fb-logo2" style="display:none; width:50px; height:50px; background-color:{psu_logo_color}; border-radius:50%; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:28px; font-family:serif; margin-right:20px;">{school_initial}</div>
+            <div class="org-name">{school_name}</div>
         </div>
         <div class="reg-address">
             <strong>Office of the University Registrar</strong><br>
-            112 Shields Building<br>
-            University Park, PA 16802<br>
-            Phone: (814) 865-6357
+            Student Services Building<br>
+            {school_info.get('city', 'University City')}, {school_info.get('state', 'State')}<br>
+            Phone: (814) {random.randint(100, 999)}-{random.randint(1000, 9999)}
         </div>
     </div>
 
@@ -741,8 +818,8 @@ def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
 
         <p>
             This letter is to verify the enrollment status of the student listed below
-            at The Pennsylvania State University. This information is generated from the
-            University's official student information system (LionPATH).
+            at {school_name}. This information is generated from the
+            University's official student information records.
         </p>
 
         <div class="title">Enrollment Verification</div>
@@ -753,8 +830,8 @@ def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
                 <td class="data-value">{name}</td>
             </tr>
             <tr>
-                <td class="data-label">Penn State ID:</td>
-                <td class="data-value">{psu_id}</td>
+                <td class="data-label">Student ID:</td>
+                <td class="data-value">{student_id}</td>
             </tr>
             <tr>
                 <td class="data-label">Academic Program:</td>
@@ -795,7 +872,7 @@ def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
         </table>
 
         <p>
-            The student listed above is currently enrolled and in {standing.lower()} at Penn State.
+            The student listed above is currently enrolled and in {standing.lower()} at {school_name}.
             Should you require further information, authorized requests may be submitted
             to the Office of the University Registrar.
         </p>
@@ -805,12 +882,12 @@ def generate_enrollment_letter_html(first_name, last_name, psu_id, major):
         </div>
         <div style="margin-top: 10px;">
             <strong>Office of the University Registrar</strong><br>
-            The Pennsylvania State University
+            {school_name}
         </div>
     </div>
 
     <div class="footer">
-        Generated by LionPATH for The Pennsylvania State University | Report ID: {report_id} | {date_str}<br>
+        Generated by official student records for {school_name} | Report ID: {report_id} | {date_str}<br>
         This document is valid for 90 days from the date of issuance.
     </div>
 </div>
@@ -850,7 +927,7 @@ def _html_to_png(html_content, width=1200, height=None):
             page = context.new_page()
 
             page.set_content(html_content, wait_until='domcontentloaded')
-            page.wait_for_load_state('load', timeout=5000)
+            page.wait_for_load_state('networkidle', timeout=15000)
 
             # حساب الارتفاع تلقائياً إذا لم يتم تحديده
             if height is None:
@@ -885,16 +962,10 @@ def generate_image(first_name, last_name, school_id='2565'):
 
 
 def generate_images(first_name, last_name, school_id='2565'):
-    """توليد مستندين: لقطة شاشة للجدول + رسالة التسجيل.
-
-    Returns:
-        قائمة بالقواميس (list[dict]): [{"file_name": str, "data": bytes}, ...]
-    """
-    psu_id = generate_psu_id()
-    major = random.choice(MAJORS)
-
+    """توليد مستندين: لقطة شاشة للجدول + رسالة التسجيل للجامعة المطلوبة."""
+    
     schedule_html = generate_schedule_html(first_name, last_name, school_id)
-    letter_html = generate_enrollment_letter_html(first_name, last_name, psu_id, major)
+    letter_html = generate_enrollment_letter_html(first_name, last_name, school_id)
 
     # عرض منفذ عرض (viewport) عشوائي
     sched_width = random.randint(1180, 1280)

@@ -9,7 +9,82 @@
 > 
 > Based on a legacy version with many improvements and new features.
 
-[中文文档](README.md) | English | [العربية](README.md)
+
+Translate Boltnew Directory
+
+
+حسناً، فهمت. يمكنك تنفيذ هذه الأوامر بنفسك في موجه الأوامر (Terminal) الخاص بك لإنشاء فرع جديد (Branch) ورفع التعديلات إلى GitHub:
+
+bash
+# 1. للتحقق من الملفات التي تم تعديلها
+git status
+# 2. لإضافة جميع التعديلات التي قمنا بها
+git add .
+# 3. لحفظ التعديلات (Commit) مع رسالة توضيحية
+git commit -m "Translate project to Arabic and attribute to new owner"
+# 4. لإنشاء فرع جديد والانتقال إليه (يمكنك تغيير اسم الفرع arabic-translation إلى ما تريد)
+git checkout -b arabic-translation
+# 5. لرفع الفرع الجديد والتعديلات إلى مستودعك على GitHub
+git push -u origin arabic-translation
+إذا لم تكن قد قمت بربط المشروع بمستودع GitHub الخاص بك بعد، فستحتاج أولاً إلى إنشاء مستودع فارغ في GitHub ثم تشغيل الأوامر التالية قبل أمر الرفع (push):
+
+bash
+# قم بتغيير الرابط إلى رابط مستودعك الفعلي
+git remote add origin https://github.com/yourusername/your-repo.git
+أنا هنا إذا احتجت إلى أي مساعدة إضافية في أي خطوة!
+
+كيف اجعل اللغة العربية هي الافتراضية ، رد بالخطوات لكيفية فعل ذلك 
+
+
+
+
+لجعل اللغة العربية هي الواجهة الافتراضية للمشروع على GitHub، يجب أن يكون ملف التوثيق العربي هو الملف المسمى بـ 
+
+README.md
+ (لأن GitHub يعرض محتوى هذا الملف تلقائياً في الصفحة الرئيسية للمشروع).
+
+إليك الخطوات بالتفصيل للقيام بذلك:
+
+الخطوة 1: تغيير أسماء الملفات
+نحتاج إلى تغيير اسم الملف الصيني الحالي وتعيين الملف العربي ليكون الرئيسي:
+
+قم بتغيير اسم الملف 
+
+README.md
+ الحالي (الصيني) إلى README_ZH.md.
+قم بتغيير اسم الملف 
+
+README_AR.md
+ الحالي إلى 
+
+README.md
+.
+يمكنك فعل ذلك يدوياً عبر مستكشف الملفات أو بتشغيل هذا الأمر في موجه الأوامر (Terminal):
+
+powershell
+Rename-Item -Path "README.md" -NewName "README_ZH.md"
+Rename-Item -Path "README_AR.md" -NewName "README.md"
+الخطوة 2: تحديث الروابط الداخلية
+يجب تحديث روابط التنقل بين اللغات داخل الملفات الثلاثة لتعكس الأسماء الجديدة.
+
+في الملف الجديد 
+
+README.md
+ (العربي): قم بتعديل سطر التنقل ليصبح كالتالي:
+
+markdown
+[中文文档](README_ZH.md) | [English](README_EN.md) | العربية
+في ملف 
+
+README_EN.md
+ (الإنجليزي): قم بتعديل سطر التنقل ليصبح كالتالي:
+
+markdown
+[中文文档](README_ZH.md) | English | [العربية](README.md)
+في ملف README_ZH.md (الصيني): قم بتعديل سطر التنقل ليصبح كالتالي:
+
+markdown
+中文 | [English](README_EN.md) | [العربية](README.md)
 
 ---
 
